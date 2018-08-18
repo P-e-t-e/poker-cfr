@@ -26,7 +26,7 @@ public class Trainer {
         Node parent_node;
         Node child_node;
         boolean is_terminal = false;
-        double[][] reach_prob = new double[2][NUM_CARDS];
+        double[][] reach_prob = new double[NUM_CARDS][NUM_CARDS];
 
         Node(boolean[] validActions, String infoSet) {
             this.validActions = validActions;
@@ -90,28 +90,32 @@ public class Trainer {
 
     }
 
-    public double calculateExploitability(int exploiter) {
+    public double calculateNetExploitability() {
+        return 0.5 * (calculateExploitabilityFor(0) + calculateExploitabilityFor(1));
+    }
+
+    public double calculateExploitabilityFor(int exploiter) {
         int[] cards = {0, 1, 2};
-        assignReachProbabilities(cards);
+        assignReachProbabilities();
 
         double exploitative_value = 0.0;
         for (int c = 0; c < cards.length; c++) {
             double card_value = findNodeValue("", exploiter, c) / NUM_CARDS;
             exploitative_value += card_value;
-            System.out.print("Value while holding card:");
-            System.out.println(c);
-            System.out.println(card_value);
+//            System.out.print("Value while holding card:");
+//            System.out.println(c);
+//            System.out.println(card_value);
         }
-        System.out.println("Value in total:");
-        System.out.println(exploitative_value);
+//        System.out.println("Value in total:");
+//        System.out.println(exploitative_value);
         return exploitative_value;
     }
 
     private double findNodeValue(String history, int exploiter, int card) {
         int player = history.length() % 2;
 
-        System.out.print("findNodeValue was called with: ");
-        System.out.println(history);
+//        System.out.print("findNodeValue was called with: ");
+//        System.out.println(history);
 
         String infoSet;
         if (player == exploiter){
@@ -121,16 +125,17 @@ public class Trainer {
             // Base case: terminal node. Find showdown value
             if (node.is_terminal) {
                 int victim = (exploiter + 1) % 2;
-                System.out.println("Exploiter's turn");
-                System.out.println(infoSet);
-                System.out.println(Arrays.toString(node.reach_prob[exploiter]));
-                System.out.println(Arrays.toString(node.reach_prob[victim]));
+//                System.out.println("Exploiter's turn");
+//                System.out.println(infoSet);
+//                System.out.println(Arrays.deepToString(node.reach_prob));
                 double expected_value = 0.0;
                 double normalization = 0.0;
                 for (int victim_card = 0; victim_card < NUM_CARDS; victim_card++) {
 //                    System.out.println(determineShowdownValue(node, exploiter, history, card, victim_card));
-                    expected_value += determineShowdownValue(node, exploiter, history, card, victim_card) * node.reach_prob[victim][victim_card];
-                    normalization += node.reach_prob[victim][victim_card];
+                    int card0 = (exploiter == 0) ? card : victim_card;
+                    int card1 = (exploiter == 1) ? card : victim_card;
+                    expected_value += determineShowdownValue(node, exploiter, history, card, victim_card) * node.reach_prob[card0][card1];
+                    normalization += node.reach_prob[card0][card1];
                 }
                 return expected_value / normalization;
             }
@@ -147,9 +152,9 @@ public class Trainer {
                     utils[a] = -Trainer.INF;
                 }
             }
-            System.out.print("Our choice utils: ");
-            System.out.print(infoSet);
-            System.out.println(Arrays.toString(utils));
+//            System.out.print("Our choice utils: ");
+//            System.out.print(infoSet);
+//            System.out.println(Arrays.toString(utils));
             return Arrays.stream(utils).max().orElseThrow(() -> new IllegalArgumentException("Array is empty"));
         } else {
             // It's the victim's turn. Consider all possible states the victim could be in:
@@ -163,42 +168,43 @@ public class Trainer {
                     if (victim_card != card){
                         infoSet = victim_card + history;
                         Node node = nodeMap.get(infoSet);
-                        System.out.print(card);
-                        System.out.print(victim_card);
-                        System.out.println("Victim's turn");
-                        System.out.println(infoSet);
-                        System.out.println(Arrays.toString(node.reach_prob[exploiter]));
-                        System.out.println(Arrays.toString(node.reach_prob[victim]));
-                        System.out.println(determineShowdownValue(node, exploiter, history, victim_card, card));
-                        expected_value += determineShowdownValue(node, exploiter, history, victim_card, card) * node.reach_prob[victim][victim_card];
-                        normalization += node.reach_prob[victim][victim_card];
+//                        System.out.print(card);
+//                        System.out.print(victim_card);
+//                        System.out.println("Victim's turn");
+//                        System.out.println(infoSet);
+//                        System.out.println(Arrays.deepToString(node.reach_prob));
+//                        System.out.println(determineShowdownValue(node, exploiter, history, victim_card, card));
+                        int card0 = (exploiter == 0) ? card : victim_card;
+                        int card1 = (exploiter == 1) ? card : victim_card;
+                        expected_value += determineShowdownValue(node, exploiter, history, victim_card, card) * node.reach_prob[card0][card1];
+                        normalization += node.reach_prob[card0][card1];
                     }
                 }
             } else {
                 double[] utils = new double[NUM_ACTIONS];
-                for (int a = 0; a < NUM_ACTIONS; a++) {
-                    infoSet = card + history + ACTION_NAMES[a];
-                    String nextHistory = history + ACTION_NAMES[a];
+                for (int victim_card = 0; victim_card < NUM_CARDS; victim_card++) {
+                    infoSet = victim_card + history;
                     Node node = nodeMap.get(infoSet);
+                    double[] strategy = node.getAverageStrategy();
 
-                    if (node != null){
-                        System.out.print("Find chance util: ");
-                        double util = findNodeValue(nextHistory, exploiter, card);
-                        utils[a] = util;
-                        expected_value += utils[a] * node.reach_prob[exploiter][card];
-                        normalization += node.reach_prob[exploiter][card];
-                        System.out.print("Ourr chance utils: ");
-                        System.out.print(infoSet);
-                        System.out.println(util);
+                    //Find util of a node like 0p, which is the weighted sum of 0pb, 0pp, etc.
+                    for (int a = 0; a < NUM_ACTIONS; a++) {
+                        String nextHistory = history + ACTION_NAMES[a];
+                        if (node.validActions[a]) {
+                            double util = findNodeValue(nextHistory, exploiter, card);
+                            utils[a] = util;
+
+                            int card0 = (exploiter == 0) ? card : victim_card;
+                            int card1 = (exploiter == 1) ? card : victim_card;
+                            expected_value += utils[a] * node.reach_prob[card0][card1] * strategy[a];
+                            normalization += node.reach_prob[card0][card1] * strategy[a];
+                        }
                     }
                 }
-                System.out.print("Our chance utils: ");
-                System.out.print(history);
-                System.out.println(Arrays.toString(utils));
             }
-            System.out.print("V_Call Non base return: ");
-            System.out.println(expected_value / normalization);
-            System.out.println(normalization);
+//            System.out.print("V_Call Non base return: ");
+//            System.out.println(expected_value / normalization);
+//            System.out.println(normalization);
             return expected_value / normalization;
         }
     }
@@ -231,59 +237,46 @@ public class Trainer {
     }
 
 
-    private void assignReachProbabilities(int[] range) {
+    private void assignReachProbabilities() {
         for (Node n : nodeMap.values()){
-            for (int i = 0; i < range.length; i++){
-                n.reach_prob[0][i] = 0;
-                n.reach_prob[1][i] = 0;
-            }
+            n.reach_prob = new double[NUM_CARDS][NUM_CARDS];
         }
-        for (int card0 = 0; card0 < range.length; card0++) {
-            for (int card1 = 0; card1 < range.length; card1++) {
+        for (int card0 = 0; card0 < NUM_CARDS; card0++) {
+            for (int card1 = 0; card1 < NUM_CARDS; card1++) {
 //                assignNodeReachProb("", card0, card1, 1.0 / NUM_CARDS, 1.0 / NUM_CARDS);
                 if (card0 != card1){
-                    assignNodeReachProb("", card0, card1, 1.0 / 2, 1.0 / 2);
+                    assignNodeReachProb("", card0, card1, 1.0 / (NUM_CARDS * (NUM_CARDS - 1)));
                 } else {
-                    assignNodeReachProb("", card0, card1, 0.0, 0.0);
+                    assignNodeReachProb("", card0, card1, 0.0);
                 }
 
             }
         }
     }
 
-    private void assignNodeReachProb(String history, int card0, int card1, double prob0, double prob1) {
+    private void assignNodeReachProb(String history, int card0, int card1, double prob) {
         // Assign the reach probability
         int player = history.length() % 2;
         // On even turns, it is plyr0's turn to act. On odd turns, it is plyr1's turn to act.
         String infoSet = (player == 0) ? card0 + history : card1 + history;
         Node node = nodeMap.get(infoSet);
 
-        node.reach_prob[0][card0] += prob0;
-        node.reach_prob[1][card1] += prob1;
+        node.reach_prob[card0][card1] += prob;
 
         // Base case: terminal node
         if (node.is_terminal) {
             return;
         }
 
-        // Non base case
-//        double[] strategy = new double[NUM_ACTIONS];
-//        if (history.length() % 2 == player) {
-//            strategy = node.getAverageStrategy();
-//        } else {
-//            for (int a = 0; a < NUM_ACTIONS; a++) {
-//                strategy[a] = 1;
-//            }
-//        }
         double[] strategy = node.getAverageStrategy();
 
         for (int a = 0; a < NUM_ACTIONS; a++) {
             if (node.validActions[a]) {
                 String nextHistory = history + ACTION_NAMES[a];
                 if (player == 0) {
-                    assignNodeReachProb(nextHistory, card0, card1, prob0 * strategy[a], prob1 * strategy[a]);
+                    assignNodeReachProb(nextHistory, card0, card1, prob * strategy[a]);
                 } else {
-                    assignNodeReachProb(nextHistory, card0, card1, prob0 * strategy[a], prob1 * strategy[a]);
+                    assignNodeReachProb(nextHistory, card0, card1, prob * strategy[a]);
                 }
             }
         }
@@ -306,8 +299,9 @@ public class Trainer {
             }
             //Calculate util for each iteration
             util += cfr(cards, "", 1, 1, rootNode);
-            if (i % 100000 == 0 && i > 30000) {
-                calculateExploitability(0);
+            if (i % 10000 == 0 && i > 30000) {
+                System.out.println("Net Expl:");
+                System.out.println(calculateNetExploitability());
             }
         }
         System.out.println("Average game value: " + util / iterations);
@@ -388,10 +382,11 @@ public class Trainer {
 
 
     public static void main(String[] args) {
-        int iterations = 500000;
+        int iterations = 5000000;
         Trainer trainer = new Trainer();
         trainer.train(iterations);
-        trainer.calculateExploitability(0);
+        System.out.println("Net Expl:");
+        System.out.println(trainer.calculateNetExploitability());
         for (Node n : trainer.nodeMap.values()){
             System.out.print(n.infoSet);
             System.out.println(Arrays.deepToString(n.reach_prob));
