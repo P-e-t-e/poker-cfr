@@ -20,6 +20,7 @@
 *config.py
 *.idea*
 *gitnore*
+*.xml
 
 
 # Byte-compiled / optimized / DLL files
