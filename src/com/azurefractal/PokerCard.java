@@ -79,7 +79,7 @@ public class PokerCard {
 	}
 
 	/**
-	 * Prases a string-encoded card.
+	 * Parses a string-encoded card.
 	 * 
 	 * @param cardAsString
 	 *            The string-encoded card.
@@ -89,5 +89,12 @@ public class PokerCard {
 		Rank rank = Rank.parse(cardAsString.charAt(0));
 		Suit suit = Suit.parse(cardAsString.charAt(1));
 		return new PokerCard(rank, suit);
+	}
+
+	public static int to_int(String cardAsString) {
+		Rank rank = Rank.parse(cardAsString.charAt(0));
+		Suit suit = Suit.parse(cardAsString.charAt(1));
+		PokerCard pokerCard = new PokerCard(rank, suit);
+		return pokerCard.encodedValue;
 	}
 }

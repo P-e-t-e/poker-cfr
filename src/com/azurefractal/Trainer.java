@@ -6,14 +6,17 @@ import java.util.Random;
 import java.util.TreeMap;
 
 public class Trainer {
-    public static final String[] ACTION_NAMES = {"p", "b", "c"};
-    public static final int NUM_ACTIONS = 3;
-    public static final int NUM_CARDS = 3;
-    public static final int RELATIVE_BET_SIZE = 1;
-    public static final Random random = new Random();
-    public TreeMap<String, Node> nodeMap = new TreeMap<String, Node>();
-    public Node rootNode = new Node(new boolean[]{true, true, false}, "");
-    public static final int INF = 999999;
+    private static final String[] ACTION_NAMES = {"p", "b", "c"};
+    private static final int NUM_ACTIONS = 3;
+    private static final int[][] RANGES = Ranges.get_broadway_range();
+    private static final int[] board = {PokerCard.to_int("2s"), PokerCard.to_int("4h"), PokerCard.to_int("6s")};
+    private static final int NUM_CARDS = RANGES.length;
+    private static final int RELATIVE_BET_SIZE = 1;
+    private static final Random random = new Random();
+    private TreeMap<String, Node> nodeMap = new TreeMap<String, Node>();
+    private Node rootNode = new Node(new boolean[]{true, true, false}, "");
+    private static final int INF = 999999;
+    private static final boolean is_mccfr = true;
 
     class Node {
         //infoset is characterized as cards and history, e.g. "1p" or "3pb"
@@ -22,7 +25,8 @@ public class Trainer {
         int numValidActions;
         double[] regretSum = new double[NUM_ACTIONS],
                 strategy = new double[NUM_ACTIONS],
-                strategySum = new double[NUM_ACTIONS];
+                strategySum = new double[NUM_ACTIONS],
+                util = new double[NUM_ACTIONS];
         Node parent_node;
         Node child_node;
         boolean is_terminal = false;
@@ -95,11 +99,10 @@ public class Trainer {
     }
 
     public double calculateExploitabilityFor(int exploiter) {
-        int[] cards = {0, 1, 2};
         assignReachProbabilities();
 
         double exploitative_value = 0.0;
-        for (int c = 0; c < cards.length; c++) {
+        for (int c = 0; c < NUM_CARDS; c++) {
             double card_value = findNodeValue("", exploiter, c) / NUM_CARDS;
             exploitative_value += card_value;
 //            System.out.print("Value while holding card:");
@@ -118,10 +121,15 @@ public class Trainer {
 //        System.out.println(history);
 
         String infoSet;
-        if (player == exploiter){
+        if (player == exploiter) {
             // It's our turn. Let's exploit.
             infoSet = card + history;
             Node node = nodeMap.get(infoSet);
+            if (node == null) {
+                System.out.println("Null node encountered");
+                System.out.println(card + history);
+                return 0.0;
+            }
             // Base case: terminal node. Find showdown value
             if (node.is_terminal) {
                 int victim = (exploiter + 1) % 2;
@@ -131,10 +139,11 @@ public class Trainer {
                 double expected_value = 0.0;
                 double normalization = 0.0;
                 for (int victim_card = 0; victim_card < NUM_CARDS; victim_card++) {
-//                    System.out.println(determineShowdownValue(node, exploiter, history, card, victim_card));
+//                    System.out.println(determineShowdownValue(history, card, victim_card));
                     int card0 = (exploiter == 0) ? card : victim_card;
                     int card1 = (exploiter == 1) ? card : victim_card;
-                    expected_value += determineShowdownValue(node, exploiter, history, card, victim_card) * node.reach_prob[card0][card1];
+                    // Note the plus sign due to player not being exploiter.
+                    expected_value += 1 * determineShowdownValue(history, card, victim_card) * node.reach_prob[card0][card1];
                     normalization += node.reach_prob[card0][card1];
                 }
                 return expected_value / normalization;
@@ -145,8 +154,6 @@ public class Trainer {
             for (int a = 0; a < NUM_ACTIONS; a++) {
                 if (node.validActions[a]) {
                     String nextHistory = history + ACTION_NAMES[a];
-//                    System.out.print("E_Call: ");
-//                    System.out.println(nextHistory);
                     utils[a] = findNodeValue(nextHistory, exploiter, card);
                 } else {
                     utils[a] = -Trainer.INF;
@@ -160,23 +167,33 @@ public class Trainer {
             // It's the victim's turn. Consider all possible states the victim could be in:
             double expected_value = 0.0;
             double normalization = 0.0;
-            int victim = (exploiter + 1) % 2;
             Node testNode = nodeMap.get(card + history);
+            if (testNode == null) {
+                System.out.println("Null node encountered");
+                System.out.println(card + history);
+                return 0.0;
+            }
             if (testNode.is_terminal) {
                 for (int victim_card = 0; victim_card < NUM_CARDS; victim_card++) {
                     // Not sure if this check is sufficient or general
-                    if (victim_card != card){
+                    if (victim_card != card) {
                         infoSet = victim_card + history;
                         Node node = nodeMap.get(infoSet);
+                        if (node == null) {
+                            System.out.println("Null node encountered");
+                            System.out.println(card + history);
+                            return 0.0;
+                        }
 //                        System.out.print(card);
 //                        System.out.print(victim_card);
 //                        System.out.println("Victim's turn");
 //                        System.out.println(infoSet);
 //                        System.out.println(Arrays.deepToString(node.reach_prob));
-//                        System.out.println(determineShowdownValue(node, exploiter, history, victim_card, card));
+//                        System.out.println(determineShowdownValue(history, victim_card, card));
                         int card0 = (exploiter == 0) ? card : victim_card;
                         int card1 = (exploiter == 1) ? card : victim_card;
-                        expected_value += determineShowdownValue(node, exploiter, history, victim_card, card) * node.reach_prob[card0][card1];
+                        // Note the minus sign due to player not being exploiter.
+                        expected_value += -1 * determineShowdownValue(history, victim_card, card) * node.reach_prob[card0][card1];
                         normalization += node.reach_prob[card0][card1];
                     }
                 }
@@ -209,19 +226,22 @@ public class Trainer {
         }
     }
 
-    private double determineShowdownValue(Node node, int exploiter, String history, int player_card, int opp_card) {
+    private double determineShowdownValue(String history, int player_card, int opp_card) {
         int plays = history.length();
         int n_calls = 0;
         char delimiter = 'c';
         for (int i = 0; i < history.length(); n_calls += (history.charAt(i++) == delimiter ? 1 : 0)) ;
-        int player = plays % 2;
-        boolean is_hero_player = exploiter == player;
-        int winSize = (is_hero_player ? 1 : -1) * (n_calls * (1 * RELATIVE_BET_SIZE) + 1);
+
+        int winSize = (n_calls * (1 * RELATIVE_BET_SIZE) + 1);
         boolean terminalPass = history.charAt(plays - 1) == 'p';
         boolean terminalCall = history.charAt(plays - 1) == 'c';
         String endingString = history.substring(plays - 2, plays);
 
-        boolean isPlayerCardHigher = player_card > opp_card;
+        int[] player_hole_cards = RANGES[player_card];
+        int[] opp_hole_cards = RANGES[opp_card];
+
+        boolean isPlayerCardHigher = HandEvaluator.evaluateHandToInt(board[0], board[1], board[2], player_hole_cards[0], player_hole_cards[1])
+                < HandEvaluator.evaluateHandToInt(board[0], board[1], board[2], opp_hole_cards[0], opp_hole_cards[1]);
 
         if (terminalPass) {
             if (endingString.equals("bp")) {
@@ -236,20 +256,16 @@ public class Trainer {
         return 0.0;
     }
 
-
     private void assignReachProbabilities() {
-        for (Node n : nodeMap.values()){
+        for (Node n : nodeMap.values()) {
             n.reach_prob = new double[NUM_CARDS][NUM_CARDS];
         }
         for (int card0 = 0; card0 < NUM_CARDS; card0++) {
             for (int card1 = 0; card1 < NUM_CARDS; card1++) {
 //                assignNodeReachProb("", card0, card1, 1.0 / NUM_CARDS, 1.0 / NUM_CARDS);
-                if (card0 != card1){
+                if (card0 != card1) {
                     assignNodeReachProb("", card0, card1, 1.0 / (NUM_CARDS * (NUM_CARDS - 1)));
-                } else {
-                    assignNodeReachProb("", card0, card1, 0.0);
                 }
-
             }
         }
     }
@@ -261,7 +277,13 @@ public class Trainer {
         String infoSet = (player == 0) ? card0 + history : card1 + history;
         Node node = nodeMap.get(infoSet);
 
-        node.reach_prob[card0][card1] += prob;
+        if (node == null) {
+            System.out.println("Null node encountered");
+            System.out.println(infoSet);
+            return;
+        } else {
+            node.reach_prob[card0][card1] += prob;
+        }
 
         // Base case: terminal node
         if (node.is_terminal) {
@@ -285,8 +307,7 @@ public class Trainer {
 
 
     public void train(int iterations) {
-        PokerCard[] board = {PokerCard.parse("2d"), PokerCard.parse("5d"), PokerCard.parse("7d")};
-        int[] cards = {0, 1, 2};
+        int[] cards = java.util.stream.IntStream.rangeClosed(0, NUM_CARDS - 1).toArray();
         double util = 0;
         //Repeat <iterations> times
         for (int i = 0; i < iterations; i++) {
@@ -298,20 +319,29 @@ public class Trainer {
                 cards[c2] = tmp;
             }
             //Calculate util for each iteration
-            util += cfr(cards, "", 1, 1, rootNode);
-            if (i % 10000 == 0 && i > 30000) {
-                System.out.println("Net Expl:");
+            if (i <= 10000000 / 10) {
+                util += cfr(cards, "", 1, 1, rootNode, false);
+            } else {
+                util += cfr(cards, "", 1, 1, rootNode, true);
+            }
+
+            if (i % 10000000 == 0 && i != 0) {
+                System.out.print("Net Expl:");
+                System.out.print(i);
+                System.out.println("");
                 System.out.println(calculateNetExploitability());
             }
         }
         System.out.println("Average game value: " + util / iterations);
-        for (Node n : nodeMap.values()){
-            System.out.println(n);
+        for (Node n : nodeMap.values()) {
+            if (!n.is_terminal) {
+                System.out.println(n);
+            }
         }
     }
 
     //This is a recursive function that returns game utility
-    private double cfr(int[] cards, String history, double p0, double p1, Node parent_node) {
+    private double cfr(int[] cards, String history, double p0, double p1, Node parent_node, boolean using_mccfr) {
         int plays = history.length();
         int n_calls = 0;
         char delimiter = 'c';
@@ -325,11 +355,7 @@ public class Trainer {
         String infoSet = cards[player] + history;
         Node node = nodeMap.get(infoSet);
         if (node == null) {
-            boolean[] validActions = {true, infoSet.charAt(infoSet.length() - 1) != 'b',
-                    infoSet.charAt(infoSet.length() - 1) == 'b'};
-            node = new Node(validActions, infoSet);
-            node.child_node = parent_node;
-            nodeMap.put(infoSet, node);
+            node = addNewNode(infoSet, parent_node);
         }
 
         //Kuhn poker ends if there has been ((more than 1 move) and (last move is a pass or last 2 moves are bets)). Return utility of game ends. 
@@ -337,7 +363,12 @@ public class Trainer {
             boolean terminalPass = history.charAt(plays - 1) == 'p';
             boolean terminalCall = history.charAt(plays - 1) == 'c';
             String endingString = history.substring(plays - 2, plays);
-            boolean isPlayerCardHigher = cards[player] > cards[opponent];
+
+            int[] player_hole_cards = RANGES[cards[player]];
+            int[] opp_hole_cards = RANGES[cards[opponent]];
+
+            boolean isPlayerCardHigher = HandEvaluator.evaluateHandToInt(board[0], board[1], board[2], player_hole_cards[0], player_hole_cards[1])
+                    < HandEvaluator.evaluateHandToInt(board[0], board[1], board[2], opp_hole_cards[0], opp_hole_cards[1]);
 
             if (terminalPass) {
                 if (endingString.equals("bp")) {
@@ -353,26 +384,38 @@ public class Trainer {
             }
         }
 
+        double nodeUtil = 0;
+
+        if (!using_mccfr) {
+            nodeUtil = vncfrGetUtil(history, node, p0, p1, cards, player, using_mccfr);
+        } else {
+            nodeUtil = mccfrGetUtil(history, node, p0, p1, cards, player, using_mccfr);
+        }
+
+        return nodeUtil;
+    }
+
+    private double vncfrGetUtil(String history, Node node, double p0, double p1, int[] cards, int player, boolean using_mccfr) {
         //get strategy setting realization weight depending on which player it is now
         double[] strategy = node.getStrategy(player == 0 ? p0 : p1);
-        double[] util = new double[NUM_ACTIONS];
         double nodeUtil = 0;
+
         //For each action, the util is given by the util of cfr with nextHistory, passing in the probably of taking that line
-        //Expected node util is given by sum of probabilities of each action times the util of that action 
+        //Expected node util is given by sum of probabilities of each action times the util of that action
         for (int a = 0; a < NUM_ACTIONS; a++) {
             if (node.validActions[a]) {
                 String nextHistory = history + ACTION_NAMES[a];
-                util[a] = player == 0
-                        ? -cfr(cards, nextHistory, p0 * strategy[a], p1, node)
-                        : -cfr(cards, nextHistory, p0, p1 * strategy[a], node);
-                nodeUtil += strategy[a] * util[a];
+                node.util[a] = player == 0
+                        ? -cfr(cards, nextHistory, p0 * strategy[a], p1, node, using_mccfr)
+                        : -cfr(cards, nextHistory, p0, p1 * strategy[a], node, using_mccfr);
+                nodeUtil += strategy[a] * node.util[a];
             }
         }
 
-        //For each action, regret is the util of taking action a  minus the node util
+        //For each action, regret is the (util of taking action a) minus the node util
         //Add this to the regret sum weighted by probability p1 or p0
         for (int a = 0; a < NUM_ACTIONS; a++) {
-            double regret = util[a] - nodeUtil;
+            double regret = node.util[a] - nodeUtil;
             node.regretSum[a] = Math.max(node.regretSum[a] + (player == 0 ? p1 : p0) * regret, 0.0);
 //            node.regretSum[a] += (player == 0 ? p1 : p0) * regret;
         }
@@ -380,17 +423,65 @@ public class Trainer {
         return nodeUtil;
     }
 
+    private double mccfrGetUtil(String history, Node node, double p0, double p1, int[] cards, int player, boolean using_mccfr) {
+        double[] strategy = node.getStrategy(player == 0 ? p0 : p1);
+        double nodeUtil = 0;
+
+        //Choose a random action
+        double randomDouble = random.nextDouble();
+        int chosenAction = 0;
+        for (int a = 0; a < NUM_ACTIONS; a++) {
+            if (randomDouble < (strategy[a])) {
+                chosenAction = a;
+            } else {
+                randomDouble -= (strategy[a]);
+            }
+        }
+//        System.out.println(Arrays.toString(strategy));
+//        System.out.println(chosenAction);
+
+        //For chosen action, recompute utility.
+        String nextHistory = history + ACTION_NAMES[chosenAction];
+        node.util[chosenAction] = player == 0
+                ? -cfr(cards, nextHistory, p0 * strategy[chosenAction], p1, node, using_mccfr)
+                : -cfr(cards, nextHistory, p0, p1 * strategy[chosenAction], node, using_mccfr);
+
+        //Then resum over action utils.
+        for (int a = 0; a < NUM_ACTIONS; a++) {
+            nodeUtil += strategy[a] * node.util[a];
+        }
+
+        //For each action, regret is the (util of taking action a) minus the node util
+        //Add this to the regret sum weighted by probability p1 or p0
+        for (int a = 0; a < NUM_ACTIONS; a++) {
+            double regret = node.util[a] - nodeUtil;
+            node.regretSum[a] = Math.max(node.regretSum[a] + (player == 0 ? p1 : p0) * regret, 0.0);
+        }
+
+        return nodeUtil;
+    }
+
+    private Node addNewNode(String infoSet, Node parent_node) {
+        boolean[] validActions = {true, infoSet.charAt(infoSet.length() - 1) != 'b',
+                infoSet.charAt(infoSet.length() - 1) == 'b'};
+        Node node = new Node(validActions, infoSet);
+        node.child_node = parent_node;
+        nodeMap.put(infoSet, node);
+        return node;
+    }
 
     public static void main(String[] args) {
-        int iterations = 5000000;
+        int iterations = 100000000;
         Trainer trainer = new Trainer();
         trainer.train(iterations);
         System.out.println("Net Expl:");
         System.out.println(trainer.calculateNetExploitability());
-        for (Node n : trainer.nodeMap.values()){
-            System.out.print(n.infoSet);
-            System.out.println(Arrays.deepToString(n.reach_prob));
-        }
+//        for (Node n : trainer.nodeMap.values()) {
+//            System.out.print(n.infoSet);
+//            System.out.println(Arrays.deepToString(n.reach_prob));
+//        }
+//        System.out.println(trainer.determineShowdownValue("bc", 0, 1));
+//        System.out.println(trainer.determineShowdownValue("bc", 2, 1));
     }
 
 }

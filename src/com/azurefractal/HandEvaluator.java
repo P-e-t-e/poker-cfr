@@ -61,8 +61,8 @@ public class HandEvaluator {
 
 	/**
 	 * Calculates the hash of a specific hand.
-	 * 
-	 * @param cards
+	 *
+	 * @param card1, card2, card3, card4, card5
 	 *            PokerCards representing the hand.
 	 * @return The computed rank of the hand.
 	 */
@@ -84,6 +84,26 @@ public class HandEvaluator {
 
 		return handRank(HashValues.values()[find((long) ((card1 & 0xff)
 				* (card2 & 0xff) * (card3 & 0xff) * (card4 & 0xff) * (card5 & 0xff)))]);
+	}
+
+	public static int evaluateHandToInt(int card1, int card2,
+										int card3, int card4, int card5) {
+		int q = (card1 | card2 | card3 | card4 | card5) >> 16;
+
+		// If there is a flush, the fourth nibble will line perfectly on
+		// one of the bits.
+		if ((card1 & card2 & card3 & card4 & card5 & 0xf000) != 0) {
+			return Flushes.values()[q]; // Flush or straight flush
+		}
+
+		short s = Unique5.values()[q]; // check for straights and high card
+		// hands
+		if (s != 0) {
+			return s;
+		}
+
+		return HashValues.values()[find((long) ((card1 & 0xff)
+				* (card2 & 0xff) * (card3 & 0xff) * (card4 & 0xff) * (card5 & 0xff)))];
 	}
 
 }
