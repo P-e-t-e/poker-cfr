@@ -7,92 +7,16 @@ import java.util.TreeMap;
 
 public class Trainer {
     private static final String[] ACTION_NAMES = {"p", "b", "c"};
-    private static final int NUM_ACTIONS = 3;
-    private static final int[][] RANGES = Ranges.get_broadway_range();
+    public static final int NUM_ACTIONS = 3;
+    private static final int[][] RANGES = Ranges.get_kuhn_range();
     private static final int[] board = {PokerCard.to_int("2s"), PokerCard.to_int("4h"), PokerCard.to_int("6s")};
-    private static final int NUM_CARDS = RANGES.length;
+    public static final int NUM_CARDS = RANGES.length;
     private static final int RELATIVE_BET_SIZE = 1;
     private static final Random random = new Random(0);
     private TreeMap<String, Node> nodeMap = new TreeMap<String, Node>();
     private Node rootNode = new Node(new boolean[]{true, true, false}, "");
     private static final int INF = 999999;
     private static final boolean is_mccfr = true;
-
-    class Node {
-        //infoset is characterized as cards and history, e.g. "1p" or "3pb"
-        String infoSet;
-        boolean[] validActions;
-        int numValidActions;
-        double[] regretSum = new double[NUM_ACTIONS],
-                strategy = new double[NUM_ACTIONS],
-                strategySum = new double[NUM_ACTIONS],
-                util = new double[NUM_ACTIONS];
-        Node parent_node;
-        Node child_node;
-        boolean is_terminal = false;
-        double[][] reach_prob = new double[NUM_CARDS][NUM_CARDS];
-
-        Node(boolean[] validActions, String infoSet) {
-            this.validActions = validActions;
-            this.infoSet = infoSet;
-            for (int a = 0; a < NUM_ACTIONS; a++) {
-                if (this.validActions[a]) {
-                    this.numValidActions += 1;
-                }
-            }
-        }
-
-        //Returns strategy stored by node
-        private double[] getStrategy(double realizationWeight) {
-            double normalizingSum = 0;
-            //For each action, take the strategy weight to be the regret sum if the regret sum is positive. Calculate normalizing sum appropriately.
-            for (int a = 0; a < NUM_ACTIONS; a++) {
-                if (this.validActions[a]) {
-                    strategy[a] = regretSum[a] > 0 ? regretSum[a] : 0;
-                    normalizingSum += strategy[a];
-                }
-            }
-            //For each action, (if normalizing sum is more than zero, normalize the strategies. Else, set all actions to equal prob).
-            //Add the strategy to the strategySum, weighting by realization weight
-            for (int a = 0; a < NUM_ACTIONS; a++) {
-                if (this.validActions[a]) {
-                    if (normalizingSum > 0)
-                        strategy[a] /= normalizingSum;
-                    else
-                        strategy[a] = 1.0 / this.numValidActions;
-                    strategySum[a] += realizationWeight * strategy[a];
-                }
-            }
-            return strategy;
-        }
-
-        //Returns average strategy stored by node
-        public double[] getAverageStrategy() {
-            double[] avgStrategy = new double[NUM_ACTIONS];
-            double normalizingSum = 0;
-            //Calculate normalizing sum. Then, normalize each action and return it. If normalization sum is non-positive, simply return uniform strategy. 
-            for (int a = 0; a < NUM_ACTIONS; a++) {
-                if (this.validActions[a]) {
-                    normalizingSum += strategySum[a];
-                }
-            }
-
-            for (int a = 0; a < NUM_ACTIONS; a++)
-                if (normalizingSum > 0 && this.validActions[a]) {
-                    avgStrategy[a] = strategySum[a] / normalizingSum;
-                } else if (this.validActions[a]) {
-                    avgStrategy[a] = 1.0 / this.numValidActions;
-                }
-
-            return avgStrategy;
-        }
-
-        //Return average strategy
-        public String toString() {
-            return String.format("%4s: %s", infoSet, Arrays.toString(getAverageStrategy()));
-        }
-
-    }
 
     public double calculateNetExploitability() {
         return 0.5 * (calculateExploitabilityFor(0) + calculateExploitabilityFor(1));
@@ -137,7 +61,7 @@ public class Trainer {
 //                System.out.println(infoSet);
 //                System.out.println(Arrays.deepToString(node.reach_prob));
                 double expected_value = 0.0;
-                double normalization = 0.0;
+                double normalization = 0.0000000000001;
                 for (int victim_card = 0; victim_card < NUM_CARDS; victim_card++) {
 //                    System.out.println(determineShowdownValue(history, card, victim_card));
                     int card0 = (exploiter == 0) ? card : victim_card;
@@ -149,24 +73,24 @@ public class Trainer {
                 return expected_value / normalization;
             }
             // Non base case: Find the best choice and take it.
-            double[] utils = new double[NUM_ACTIONS];
+            double[] values = new double[NUM_ACTIONS];
 
             for (int a = 0; a < NUM_ACTIONS; a++) {
                 if (node.validActions[a]) {
                     String nextHistory = history + ACTION_NAMES[a];
-                    utils[a] = findNodeValue(nextHistory, exploiter, card);
+                    values[a] = findNodeValue(nextHistory, exploiter, card);
                 } else {
-                    utils[a] = -Trainer.INF;
+                    values[a] = -Trainer.INF;
                 }
             }
-//            System.out.print("Our choice utils: ");
+//            System.out.print("Our choice values: ");
 //            System.out.print(infoSet);
-//            System.out.println(Arrays.toString(utils));
-            return Arrays.stream(utils).max().orElseThrow(() -> new IllegalArgumentException("Array is empty"));
+//            System.out.println(Arrays.toString(values));
+            return Arrays.stream(values).max().orElseThrow(() -> new IllegalArgumentException("Array is empty"));
         } else {
             // It's the victim's turn. Consider all possible states the victim could be in:
             double expected_value = 0.0;
-            double normalization = 0.0;
+            double normalization = 0.0000000000001;
             Node testNode = nodeMap.get(card + history);
             if (testNode == null) {
                 System.out.println("Null node encountered");
@@ -198,22 +122,22 @@ public class Trainer {
                     }
                 }
             } else {
-                double[] utils = new double[NUM_ACTIONS];
+                double[] values = new double[NUM_ACTIONS];
                 for (int victim_card = 0; victim_card < NUM_CARDS; victim_card++) {
                     infoSet = victim_card + history;
                     Node node = nodeMap.get(infoSet);
-                    double[] strategy = node.getAverageStrategy();
+                    double[] strategy = node.getActualStrategy();
 
-                    //Find util of a node like 0p, which is the weighted sum of 0pb, 0pp, etc.
+                    //Find value of a node like 0p, which is the weighted sum of 0pb, 0pp, etc.
                     for (int a = 0; a < NUM_ACTIONS; a++) {
                         String nextHistory = history + ACTION_NAMES[a];
                         if (node.validActions[a]) {
-                            double util = findNodeValue(nextHistory, exploiter, card);
-                            utils[a] = util;
+                            double value = findNodeValue(nextHistory, exploiter, card);
+                            values[a] = value;
 
                             int card0 = (exploiter == 0) ? card : victim_card;
                             int card1 = (exploiter == 1) ? card : victim_card;
-                            expected_value += utils[a] * node.reach_prob[card0][card1] * strategy[a];
+                            expected_value += values[a] * node.reach_prob[card0][card1] * strategy[a];
                             normalization += node.reach_prob[card0][card1] * strategy[a];
                         }
                     }
@@ -252,7 +176,8 @@ public class Trainer {
         } else if (terminalCall) {
             return (isPlayerCardHigher ? winSize : -winSize);
         }
-        System.out.println("ERROR");
+        System.out.println("ERROR: The following is not a terminal node");
+        System.out.println(history);
         return 0.0;
     }
 
@@ -290,7 +215,7 @@ public class Trainer {
             return;
         }
 
-        double[] strategy = node.getAverageStrategy();
+        double[] strategy = node.getActualStrategy();
 
         for (int a = 0; a < NUM_ACTIONS; a++) {
             if (node.validActions[a]) {
@@ -305,9 +230,37 @@ public class Trainer {
 
     }
 
+    public void buildTree() {
+        for (int i = 0; i < NUM_CARDS; i++) {
+            Node newNode = addNewNode(Integer.toString(i), rootNode);
+            buildTreeFrom(newNode);
+        }
+    }
+
+    public void buildTreeFrom(Node node) {
+        for (int a = 0; a < NUM_ACTIONS; a++) {
+            if (node.validActions[a]) {
+                String infoSet = node.infoSet;
+                int lenInfoSet = infoSet.length();
+                String endingString1 = (lenInfoSet > 1) ? infoSet.substring(lenInfoSet - 1, lenInfoSet) : "";
+                String endingString2 = (lenInfoSet > 1) ? infoSet.substring(lenInfoSet - 2, lenInfoSet) : "";
+                if (endingString1.equals("c") || endingString2.equals("bp") || endingString2.equals("pp")) {
+                    // Terminal Node
+                    node.is_terminal = true;
+                } else {
+                    // Non terminal Node
+                    String newInfoSet = infoSet + ACTION_NAMES[a];
+                    Node newNode = addNewNode(newInfoSet, node);
+                    buildTreeFrom(newNode);
+                }
+            }
+        }
+    }
+
     public void train(int iterations) {
         int[] cards = java.util.stream.IntStream.rangeClosed(0, NUM_CARDS - 1).toArray();
-        double util = 0;
+        double value = 0;
+        buildTree();
         //Repeat <iterations> times
         for (int i = 0; i < iterations; i++) {
             //Shuffle cards
@@ -317,21 +270,27 @@ public class Trainer {
                 cards[c1] = cards[c2];
                 cards[c2] = tmp;
             }
-            //Calculate util for each iteration
-            if (i <= 10000000) {
-                util += cfr(cards, "", 1, 1, rootNode, false);
+            //Calculate value for each iteration
+            if (i <= 4000000) {
+                value += cfr(cards, "", 1, 1, rootNode, false);
             } else {
-                util += cfr(cards, "", 1, 1, rootNode, true);
+                value += cfr(cards, "", 1, 1, rootNode, true);
             }
 
-            if (i % 10000000 == 0 && i != 0) {
+            if (i % 100000 == 0 && i != 0) {
                 System.out.print("Net Expl:");
                 System.out.print(i);
                 System.out.println("");
                 System.out.println(calculateNetExploitability());
+                System.out.println("Average game value: " + value / iterations);
+                for (Node n : nodeMap.values()) {
+                    if (!n.is_terminal) {
+                        System.out.println(n);
+                    }
+                }
             }
         }
-        System.out.println("Average game value: " + util / iterations);
+        System.out.println("Average game value: " + value / iterations);
         for (Node n : nodeMap.values()) {
             if (!n.is_terminal) {
                 System.out.println(n);
@@ -339,7 +298,7 @@ public class Trainer {
         }
     }
 
-    //This is a recursive function that returns game utility
+    //This is a recursive function that returns game value
     private double cfr(int[] cards, String history, double p0, double p1, Node parent_node, boolean using_mccfr) {
         int plays = history.length();
         int n_calls = 0;
@@ -354,10 +313,11 @@ public class Trainer {
         String infoSet = cards[player] + history;
         Node node = nodeMap.get(infoSet);
         if (node == null) {
+            System.out.println("null node");
             node = addNewNode(infoSet, parent_node);
         }
 
-        //Kuhn poker ends if there has been ((more than 1 move) and (last move is a pass or last 2 moves are bets)). Return utility of game ends. 
+        //Kuhn poker ends if there has been ((more than 1 move) and (last move is a pass or last 2 moves are bets)). Return value of game ends.
         if (plays > 1) {
             boolean terminalPass = history.charAt(plays - 1) == 'p';
             boolean terminalCall = history.charAt(plays - 1) == 'c';
@@ -383,81 +343,91 @@ public class Trainer {
             }
         }
 
-        double nodeUtil = 0;
+        double nodeValue = 0;
 
         if (!using_mccfr) {
-            nodeUtil = vncfrGetUtil(history, node, p0, p1, cards, player, using_mccfr);
+            nodeValue = vncfrGetValue(history, node, p0, p1, cards, player, using_mccfr);
         } else {
-            nodeUtil = mccfrGetUtil(history, node, p0, p1, cards, player, using_mccfr);
+            nodeValue = mccfrGetValue(history, node, p0, p1, cards, player, using_mccfr);
         }
 
-        return nodeUtil;
+        return nodeValue;
     }
 
-    private double vncfrGetUtil(String history, Node node, double p0, double p1, int[] cards, int player, boolean using_mccfr) {
+    private double vncfrGetValue(String history, Node node, double p0, double p1, int[] cards, int player, boolean using_mccfr) {
         //get strategy setting realization weight depending on which player it is now
         double[] strategy = node.getStrategy(player == 0 ? p0 : p1);
-        double nodeUtil = 0;
+        double nodeValue = 0;
 
-        //For each action, the util is given by the util of cfr with nextHistory, passing in the probably of taking that line
-        //Expected node util is given by sum of probabilities of each action times the util of that action
+        //For each action, the value is given by the value of cfr with nextHistory, passing in the probably of taking that line
+        //Expected node value is given by sum of probabilities of each action times the value of that action
         for (int a = 0; a < NUM_ACTIONS; a++) {
             if (node.validActions[a]) {
                 String nextHistory = history + ACTION_NAMES[a];
-                node.util[a] = player == 0
+                node.values[a] = player == 0
                         ? -cfr(cards, nextHistory, p0 * strategy[a], p1, node, using_mccfr)
                         : -cfr(cards, nextHistory, p0, p1 * strategy[a], node, using_mccfr);
-                nodeUtil += strategy[a] * node.util[a];
+                nodeValue += strategy[a] * node.values[a];
             }
         }
 
-        //For each action, regret is the (util of taking action a) minus the node util
+        //For each action, regret is the (value of taking action a) minus the node value
         //Add this to the regret sum weighted by probability p1 or p0
         for (int a = 0; a < NUM_ACTIONS; a++) {
-            double regret = node.util[a] - nodeUtil;
+            double regret = node.values[a] - nodeValue;
             node.regretSum[a] = Math.max(node.regretSum[a] + (player == 0 ? p1 : p0) * regret, 0.0);
 //            node.regretSum[a] += (player == 0 ? p1 : p0) * regret;
         }
 
-        return nodeUtil;
+        return nodeValue;
     }
 
-    private double mccfrGetUtil(String history, Node node, double p0, double p1, int[] cards, int player, boolean using_mccfr) {
+    private double mccfrGetValue(String history, Node node, double p0, double p1, int[] cards, int player, boolean using_mccfr) {
         double[] strategy = node.getStrategy(player == 0 ? p0 : p1);
-        double nodeUtil = 0;
+        double[] probabilities = strategy;
+        double nodeValue = 0;
 
         //Choose a random action
-        double randomDouble = random.nextDouble();
         int chosenAction = 0;
-        for (int a = 0; a < NUM_ACTIONS; a++) {
-            if (randomDouble < (strategy[a])) {
-                chosenAction = a;
-            } else {
-                randomDouble -= (strategy[a]);
+        if (random.nextDouble() < 0.0) {
+            int randomInt = random.nextInt(NUM_ACTIONS);
+            while (!node.validActions[randomInt]) {
+                randomInt = random.nextInt(NUM_ACTIONS);
+            }
+            assert (node.validActions[chosenAction]);
+        } else {
+            double randomDouble = random.nextDouble();
+            for (int a = 0; a < NUM_ACTIONS; a++) {
+                if (randomDouble < (probabilities[a])) {
+                    chosenAction = a;
+                } else {
+                    randomDouble -= (probabilities[a]);
+                }
             }
         }
+
 //        System.out.println(Arrays.toString(strategy));
 //        System.out.println(chosenAction);
 
-        //For chosen action, recompute utility.
+        //For chosen action, recompute values.
         String nextHistory = history + ACTION_NAMES[chosenAction];
-        node.util[chosenAction] = player == 0
+        node.values[chosenAction] = player == 0
                 ? -cfr(cards, nextHistory, p0 * strategy[chosenAction], p1, node, using_mccfr)
                 : -cfr(cards, nextHistory, p0, p1 * strategy[chosenAction], node, using_mccfr);
 
-        //Then resum over action utils.
+        //Then resum over action values.
         for (int a = 0; a < NUM_ACTIONS; a++) {
-            nodeUtil += strategy[a] * node.util[a];
+            nodeValue += strategy[a] * node.values[a];
         }
 
-        //For each action, regret is the (util of taking action a) minus the node util
+        //For each action, regret is the (value of taking action a) minus the node value
         //Add this to the regret sum weighted by probability p1 or p0
         for (int a = 0; a < NUM_ACTIONS; a++) {
-            double regret = node.util[a] - nodeUtil;
+            double regret = node.values[a] - nodeValue;
             node.regretSum[a] = Math.max(node.regretSum[a] + (player == 0 ? p1 : p0) * regret, 0.0);
         }
 
-        return nodeUtil;
+        return nodeValue;
     }
 
     private Node addNewNode(String infoSet, Node parent_node) {
@@ -470,7 +440,7 @@ public class Trainer {
     }
 
     public static void main(String[] args) {
-        int iterations = 100000000;
+        int iterations = 1000000;
         Trainer trainer = new Trainer();
         trainer.train(iterations);
         System.out.println("Net Expl:");

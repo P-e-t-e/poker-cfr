@@ -72,4 +72,19 @@ public class Ranges {
         }
         return range;
     }
+
+    public static int[][] get_binary_range() {
+        int[][] range = new int[2][2];
+        int k = 0;
+        PokerCard card0;
+        PokerCard card1;
+        for (int i = 13; i < 15; i++) {
+            card0 = new PokerCard(new Rank(i), Suit.CLUB);
+            card1 = new PokerCard(new Rank(i), Suit.DIAMOND);
+            range[k][0] = card0.getEncodedValue();
+            range[k][1] = card1.getEncodedValue();
+            k += 1;
+        }
+        return range;
+    }
 }
