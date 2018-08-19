@@ -12,7 +12,7 @@ public class Trainer {
     private static final int[] board = {PokerCard.to_int("2s"), PokerCard.to_int("4h"), PokerCard.to_int("6s")};
     private static final int NUM_CARDS = RANGES.length;
     private static final int RELATIVE_BET_SIZE = 1;
-    private static final Random random = new Random();
+    private static final Random random = new Random(0);
     private TreeMap<String, Node> nodeMap = new TreeMap<String, Node>();
     private Node rootNode = new Node(new boolean[]{true, true, false}, "");
     private static final int INF = 999999;
@@ -305,7 +305,6 @@ public class Trainer {
 
     }
 
-
     public void train(int iterations) {
         int[] cards = java.util.stream.IntStream.rangeClosed(0, NUM_CARDS - 1).toArray();
         double util = 0;
@@ -319,7 +318,7 @@ public class Trainer {
                 cards[c2] = tmp;
             }
             //Calculate util for each iteration
-            if (i <= 10000000 / 10) {
+            if (i <= 10000000) {
                 util += cfr(cards, "", 1, 1, rootNode, false);
             } else {
                 util += cfr(cards, "", 1, 1, rootNode, true);
