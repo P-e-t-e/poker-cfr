@@ -6,15 +6,15 @@ import java.util.Random;
 import java.util.TreeMap;
 
 public class Trainer {
-    private static final String[] ACTION_NAMES = {"p", "b", "c"};
+    public static final String[] ACTION_NAMES = {"p", "b", "c"};
     public static final int NUM_ACTIONS = 3;
     private static final int[][] RANGES = Ranges.get_kuhn_range();
     private static final int[] board = {PokerCard.to_int("2s"), PokerCard.to_int("4h"), PokerCard.to_int("6s")};
     public static final int NUM_CARDS = RANGES.length;
     private static final int RELATIVE_BET_SIZE = 1;
     private static final Random random = new Random(0);
-    private TreeMap<String, Node> nodeMap = new TreeMap<String, Node>();
-    private Node rootNode = new Node(new boolean[]{true, true, false}, "");
+    public TreeMap<String, Node> nodeMap = new TreeMap<String, Node>();
+    public Node rootNode = new Node(new boolean[]{true, true, false}, "");
     private static final int INF = 999999;
     private static final boolean is_mccfr = true;
 
@@ -230,37 +230,10 @@ public class Trainer {
 
     }
 
-    public void buildTree() {
-        for (int i = 0; i < NUM_CARDS; i++) {
-            Node newNode = addNewNode(Integer.toString(i), rootNode);
-            buildTreeFrom(newNode);
-        }
-    }
-
-    public void buildTreeFrom(Node node) {
-        for (int a = 0; a < NUM_ACTIONS; a++) {
-            if (node.validActions[a]) {
-                String infoSet = node.infoSet;
-                int lenInfoSet = infoSet.length();
-                String endingString1 = (lenInfoSet > 1) ? infoSet.substring(lenInfoSet - 1, lenInfoSet) : "";
-                String endingString2 = (lenInfoSet > 1) ? infoSet.substring(lenInfoSet - 2, lenInfoSet) : "";
-                if (endingString1.equals("c") || endingString2.equals("bp") || endingString2.equals("pp")) {
-                    // Terminal Node
-                    node.is_terminal = true;
-                } else {
-                    // Non terminal Node
-                    String newInfoSet = infoSet + ACTION_NAMES[a];
-                    Node newNode = addNewNode(newInfoSet, node);
-                    buildTreeFrom(newNode);
-                }
-            }
-        }
-    }
-
     public void train(int iterations) {
         int[] cards = java.util.stream.IntStream.rangeClosed(0, NUM_CARDS - 1).toArray();
         double value = 0;
-        buildTree();
+        Tree.buildTree(rootNode, nodeMap);
         //Repeat <iterations> times
         for (int i = 0; i < iterations; i++) {
             //Shuffle cards
@@ -314,7 +287,7 @@ public class Trainer {
         Node node = nodeMap.get(infoSet);
         if (node == null) {
             System.out.println("null node");
-            node = addNewNode(infoSet, parent_node);
+            node = Tree.addNewNode(infoSet, parent_node, nodeMap);
         }
 
         //Kuhn poker ends if there has been ((more than 1 move) and (last move is a pass or last 2 moves are bets)). Return value of game ends.
@@ -428,15 +401,6 @@ public class Trainer {
         }
 
         return nodeValue;
-    }
-
-    private Node addNewNode(String infoSet, Node parent_node) {
-        boolean[] validActions = {true, infoSet.charAt(infoSet.length() - 1) != 'b',
-                infoSet.charAt(infoSet.length() - 1) == 'b'};
-        Node node = new Node(validActions, infoSet);
-        node.child_node = parent_node;
-        nodeMap.put(infoSet, node);
-        return node;
     }
 
     public static void main(String[] args) {
