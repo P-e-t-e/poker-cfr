@@ -256,11 +256,11 @@ public class Trainer {
                 System.out.println("");
                 System.out.println(calculateNetExploitability());
                 System.out.println("Average game value: " + value / iterations);
-                for (Node n : nodeMap.values()) {
-                    if (!n.is_terminal) {
-                        System.out.println(n);
-                    }
-                }
+//                for (Node n : nodeMap.values()) {
+//                    if (!n.is_terminal) {
+//                        System.out.println(n);
+//                    }
+//                }
             }
         }
         System.out.println("Average game value: " + value / iterations);
@@ -279,41 +279,14 @@ public class Trainer {
         for (int i = 0; i < history.length(); n_calls += (history.charAt(i++) == delimiter ? 1 : 0)) ;
         int player = plays % 2;
         int opponent = 1 - player;
-        int winSize = n_calls * (1 * RELATIVE_BET_SIZE) + 1;
 
         //infoset is characterized as cards and history, e.g. "1p" or "3pb"
         //Try to get that node. If that node does not exist, create it and put it in the nodeMap under the key infoSet.
         String infoSet = cards[player] + history;
         Node node = nodeMap.get(infoSet);
-        if (node == null) {
-            System.out.println("null node");
-            node = Tree.addNewNode(infoSet, parent_node, nodeMap);
-        }
-
         //Kuhn poker ends if there has been ((more than 1 move) and (last move is a pass or last 2 moves are bets)). Return value of game ends.
-        if (plays > 1) {
-            boolean terminalPass = history.charAt(plays - 1) == 'p';
-            boolean terminalCall = history.charAt(plays - 1) == 'c';
-            String endingString = history.substring(plays - 2, plays);
-
-            int[] player_hole_cards = RANGES[cards[player]];
-            int[] opp_hole_cards = RANGES[cards[opponent]];
-
-            boolean isPlayerCardHigher = HandEvaluator.evaluateHandToInt(board[0], board[1], board[2], player_hole_cards[0], player_hole_cards[1])
-                    < HandEvaluator.evaluateHandToInt(board[0], board[1], board[2], opp_hole_cards[0], opp_hole_cards[1]);
-
-            if (terminalPass) {
-                if (endingString.equals("bp")) {
-                    node.is_terminal = true;
-                    return winSize;
-                } else if (endingString.equals("pp")) {
-                    node.is_terminal = true;
-                    return isPlayerCardHigher ? winSize : -winSize;
-                }
-            } else if (terminalCall) {
-                node.is_terminal = true;
-                return isPlayerCardHigher ? winSize : -winSize;
-            }
+        if (node.is_terminal) {
+            return determineShowdownValue(history, cards[player], cards[opponent]);
         }
 
         double nodeValue = 0;
