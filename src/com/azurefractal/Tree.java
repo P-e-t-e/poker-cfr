@@ -5,10 +5,8 @@ import java.util.TreeMap;
 public class Tree {
 
     public static void buildTree(Node rootNode, TreeMap nodeMap) {
-        for (int i = 0; i < Trainer.NUM_CARDS; i++) {
-            Node newNode = addNewNode(Integer.toString(i), rootNode, nodeMap);
-            buildTreeFrom(newNode, nodeMap);
-        }
+        nodeMap.put("", rootNode);
+        buildTreeFrom(rootNode, nodeMap);
     }
 
     public static void buildTreeFrom(Node node, TreeMap nodeMap) {
@@ -35,7 +33,7 @@ public class Tree {
         boolean[] validActions = {true, infoSet.charAt(infoSet.length() - 1) != 'b',
                 infoSet.charAt(infoSet.length() - 1) == 'b'};
         Node node = new Node(validActions, infoSet);
-        node.child_node = parent_node;
+        node.parent_node = parent_node;
         nodeMap.put(infoSet, node);
         return node;
     }
