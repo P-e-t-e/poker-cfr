@@ -1,6 +1,7 @@
 package com.azurefractal;
 
 import javax.lang.model.type.NullType;
+import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.TreeMap;
@@ -261,8 +262,8 @@ public class Trainer {
                     if (!n.is_terminal) {
 //                        System.out.println(n);
                         System.out.print(n.infoSet);
-                        System.out.println(Arrays.deepToString(n.getStrategy()));
-//                        System.out.println(Arrays.deepToString(n.p));
+//                        System.out.println(Arrays.deepToString(n.getStrategy()));
+                        System.out.println(Arrays.deepToString(n.regretSum));
                     }
                 }
             }
@@ -280,6 +281,8 @@ public class Trainer {
         int plyr_not_i = 1 - plyr_i;
 
         Node node = nodeMap.get(history);
+//        System.out.println(plyr_i);
+//        System.out.println(history);
 //        System.out.println(Arrays.toString(pi));
 //        System.out.println(Arrays.toString(pni));
         node.p[0] = (plyr_i == 0) ? pi : pni;
@@ -290,16 +293,22 @@ public class Trainer {
                 double opponentUnblockedSum = 0;
                 double opponentTotalSum = 0;
 
+                int oppCount = 0;
                 for (int pnic = 0; pnic < NUM_CARDS; pnic++) {
                     if (pic != pnic) {
-                        nodeValue[pic] += node.p[plyr_not_i][pnic] * determineShowdownValue(history, pic, pnic);
+                        nodeValue[pic] += node.p[plyr_not_i][pnic] * (player == plyr_i ? determineShowdownValue(history, pic, pnic) : -determineShowdownValue(history, pnic, pic))
+                        ;
                         opponentUnblockedSum += node.p[plyr_not_i][pnic];
+                        oppCount += 1;
                     }
                     opponentTotalSum += node.p[plyr_not_i][pnic];
                 }
 //                System.out.println(Arrays.deepToString(node.p));
-                if (opponentUnblockedSum > 0) {
-                    nodeValue[pic] *= opponentTotalSum / opponentUnblockedSum;
+//                if (opponentUnblockedSum > 0) {
+//                    nodeValue[pic] *= opponentTotalSum / opponentUnblockedSum;
+//                }
+                if (oppCount > 0) {
+                    nodeValue[pic] /= oppCount;
                 }
             }
             return nodeValue;
@@ -316,6 +325,9 @@ public class Trainer {
         double[] nodeValue = new double[NUM_CARDS];
         double[][] strategy = node.getStrategy();
 
+        if (plyr_i == 1) {
+            int asd = 0;
+        }
         // LINE 22
         for (int a = 0; a < NUM_ACTIONS; a++) {
             if (node.validActions[a]) {
@@ -326,6 +338,9 @@ public class Trainer {
                     nodeValue = Util.arrayAdd(nodeValue, Util.arrayDot(strategy[a], node.values[a]));
                 } else {
                     // LINE 29-31
+//                    System.out.println(Arrays.deepToString(strategy));
+//                    System.out.println(Arrays.toString(strategy[a]));
+//                    System.out.println(Arrays.toString(Util.arrayDot(strategy[a], pni)));
                     node.values[a] = cfr(nextHistory, pi, Util.arrayDot(strategy[a], pni), plyr_i);
 //                    nodeValue = Util.arrayAdd(nodeValue, Util.arrayDot(strategy[a], node.values[a]));
                     nodeValue = Util.arrayAdd(nodeValue, node.values[a]);
@@ -341,7 +356,7 @@ public class Trainer {
                         double regret = 0;
                         regret = node.values[a][c] - nodeValue[c];
                         // According to paper, no weighing of regret here?
-                        node.regretSum[a][c] = node.regretSum[a][c] + regret;
+                        node.regretSum[a][c] += regret;
 //                        node.regretSum[a][c] = Math.max(node.regretSum[a][c] + regret, 0.0);
                         node.strategySum[a][c] += pi[c] * strategy[a][c];
                     }
