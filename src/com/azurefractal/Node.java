@@ -51,18 +51,6 @@ public class Node {
             }
         }
         return strategy;
-//        //For each action, (if normalizing sum is more than zero, normalize the strategies. Else, set all actions to equal prob).
-//        //Add the strategy to the strategySum, weighting by realization weight
-//        for (int a = 0; a < Trainer.NUM_ACTIONS; a++) {
-//            if (this.validActions[a]) {
-//                if (normalizingSum > 0)
-//                    strategy[a] /= normalizingSum;
-//                else
-//                    strategy[a] = 1.0 / this.numValidActions;
-//                strategySum[a] += realizationWeight * strategy[a];
-//            }
-//        }
-//        return strategy;
     }
 
     //Returns average strategy stored by node
