@@ -9,7 +9,7 @@ import java.util.TreeMap;
 public class Trainer {
     public static final String[] ACTION_NAMES = {"p", "b", "c"};
     public static final int NUM_ACTIONS = 3;
-    private static final int[][] RANGES = Ranges.get_kuhn_range();
+    private static final int[][] RANGES = Ranges.get_broadway_range();
     private static final int[] board = {PokerCard.to_int("2s"), PokerCard.to_int("4h"), PokerCard.to_int("6s")};
     public static final int NUM_CARDS = RANGES.length;
     private static final int RELATIVE_BET_SIZE = 1;
@@ -100,7 +100,7 @@ public class Trainer {
                     if (!n.is_terminal) {
 //                        System.out.println(n);
 //                        System.out.print(n.infoSet);
-//                        System.out.println(Arrays.deepToString(n.getStrategy()));
+//                        System.out.println(Arrays.deepToString(n.getActualStrategy()));
 //                        System.out.println(Arrays.deepToString(n.p));
                     }
                 }
@@ -244,7 +244,7 @@ public class Trainer {
         if (player == plyr_i) {
             nodeValue = Util.arrayFull(-Trainer.INF, NUM_CARDS);
         }
-        double[][] strategy = node.getStrategy();
+        double[][] strategy = node.getActualStrategy();
 
         // LINE 22
         for (int a = 0; a < NUM_ACTIONS; a++) {
@@ -271,9 +271,9 @@ public class Trainer {
     }
 
     public static void main(String[] args) {
-        int iterations = 10000000;
+        int iterations = 1000000;
         Trainer trainer = new Trainer();
-        trainer.train(iterations, 1000000);
+        trainer.train(iterations, iterations / 10);
 
         for (Node n : trainer.nodeMap.values()) {
             System.out.print(n.infoSet);
