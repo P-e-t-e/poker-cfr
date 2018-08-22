@@ -9,13 +9,14 @@ import java.util.TreeMap;
 public class Trainer {
     public static final String[] ACTION_NAMES = {"p", "b", "c"};
     public static final int NUM_ACTIONS = 3;
-    private static final int[][] RANGES = Ranges.get_broadway_range();
+    private static final int[][] RANGES = Ranges.get_kuhn_range();
     private static final int[] board = {PokerCard.to_int("2s"), PokerCard.to_int("4h"), PokerCard.to_int("6s")};
     public static final int NUM_CARDS = RANGES.length;
+    public static final int NUM_BOARD_CARDS = 1;
     private static final int RELATIVE_BET_SIZE = 1;
     private static final Random random = new Random(0);
-    public TreeMap<String, Node> nodeMap = new TreeMap<String, Node>();
-    public Node rootNode = new Node(new boolean[]{true, true, false}, "");
+    public TreeMap<String, Node> nodeMap = new TreeMap<>();
+    public Node rootNode = new Node(new boolean[]{true, true, false}, "", 0);
     private static final int INF = 999999;
 
     public double calculateNetExploitability() {
@@ -25,7 +26,7 @@ public class Trainer {
     public double calculateExploitabilityFor(int exploiter) {
         double[] pi = Util.arrayFull(1.0 / NUM_CARDS, NUM_CARDS);
         double[] pni = Util.arrayFull(1.0 / NUM_CARDS, NUM_CARDS);
-        double[] card_value = exploit("", pi, pni, exploiter);
+        double[] card_value = exploit(rootNode, pi, pni, exploiter);
         double exploitative_value = 0.0;
         for (int c = 0; c < NUM_CARDS; c++) {
             exploitative_value += card_value[c];
@@ -69,7 +70,6 @@ public class Trainer {
     }
 
     public void train(int iterations, int render_intvl) {
-        int[] cards = java.util.stream.IntStream.rangeClosed(0, NUM_CARDS - 1).toArray();
         double[] value0 = new double[NUM_CARDS];
         double[] value1 = new double[NUM_CARDS];
         Tree.buildTree(rootNode, nodeMap);
@@ -84,9 +84,9 @@ public class Trainer {
         for (int i = 0; i < iterations; i++) {
             for (int plyr_i = 0; plyr_i < 2; plyr_i++) {
                 if (plyr_i == 0) {
-                    value0 = Util.arrayAdd(value0, cfr("", pi, pni, plyr_i));
+                    value0 = Util.arrayAdd(value0, cfr(rootNode, pi, pni, plyr_i));
                 } else {
-                    value1 = Util.arrayAdd(value1, cfr("", pi, pni, plyr_i));
+                    value1 = Util.arrayAdd(value1, cfr(rootNode, pi, pni, plyr_i));
                 }
             }
 
@@ -109,20 +109,20 @@ public class Trainer {
     }
 
     //This is a recursive function that returns game value
-    private double[] cfr(String history, double[] pi, double[] pni, int plyr_i) {
+    private double[] cfr(Node node, double[] pi, double[] pni, int plyr_i) {
+        String history = node.infoSet;
         int plays = history.length();
-        int n_calls = 0;
-        char delimiter = 'c';
-        for (int i = 0; i < history.length(); n_calls += (history.charAt(i++) == delimiter ? 1 : 0)) ;
         int player = plays % 2;
-        int opponent = 1 - player;
         int plyr_not_i = 1 - plyr_i;
-
-        Node node = nodeMap.get(history);
 
         node.p[0] = (plyr_i == 0) ? pi : pni;
         node.p[1] = (plyr_i == 1) ? pi : pni;
-        if (node.is_terminal) {
+
+        if (node instanceof BoardNode) {
+            int bc = random.nextInt(NUM_BOARD_CARDS);
+            Node nextNode = node.childNodes[bc];
+            return cfr(nextNode, pi, pni, plyr_i);
+        } else if (node.is_terminal) {
             double[] nodeValue = new double[NUM_CARDS];
             for (int pic = 0; pic < NUM_CARDS; pic++) {
                 double opponentUnblockedSum = 0;
@@ -151,9 +151,7 @@ public class Trainer {
             return nodeValue;
         }
 
-        double[] nodeValue = vncfrGetValue(history, node, pi, pni, plyr_i);
-
-        return nodeValue;
+        return vncfrGetValue(history, node, pi, pni, plyr_i);
     }
 
     private double[] vncfrGetValue(String history, Node node, double[] pi, double[] pni, int plyr_i) {
@@ -165,14 +163,14 @@ public class Trainer {
         // LINE 22
         for (int a = 0; a < NUM_ACTIONS; a++) {
             if (node.validActions[a]) {
-                String nextHistory = history + ACTION_NAMES[a];
+                Node nextNode = node.childNodes[a];
                 if (player == plyr_i) {
                     // LINE 24-27
-                    node.values[a] = cfr(nextHistory, Util.arrayDot(strategy[a], pi), pni, plyr_i);
+                    node.values[a] = cfr(nextNode, Util.arrayDot(strategy[a], pi), pni, plyr_i);
                     nodeValue = Util.arrayAdd(nodeValue, Util.arrayDot(strategy[a], node.values[a]));
                 } else {
                     // LINE 29-31
-                    node.values[a] = cfr(nextHistory, pi, Util.arrayDot(strategy[a], pni), plyr_i);
+                    node.values[a] = cfr(nextNode, pi, Util.arrayDot(strategy[a], pni), plyr_i);
 //                    nodeValue = Util.arrayAdd(nodeValue, Util.arrayDot(strategy[a], node.values[a]));
                     nodeValue = Util.arrayAdd(nodeValue, node.values[a]);
                 }
@@ -198,19 +196,22 @@ public class Trainer {
         return nodeValue;
     }
 
-    private double[] exploit(String history, double[] pi, double[] pni, int plyr_i) {
+    private double[] exploit(Node node, double[] pi, double[] pni, int plyr_i) {
+        String history = node.infoSet;
         int plays = history.length();
-        int n_calls = 0;
-        char delimiter = 'c';
-        for (int i = 0; i < history.length(); n_calls += (history.charAt(i++) == delimiter ? 1 : 0)) ;
         int player = plays % 2;
         int plyr_not_i = 1 - plyr_i;
 
-        Node node = nodeMap.get(history);
-
         node.p[0] = (plyr_i == 0) ? pi : pni;
         node.p[1] = (plyr_i == 1) ? pi : pni;
-        if (node.is_terminal) {
+        if (node instanceof BoardNode) {
+            double[] nodeValue = new double[NUM_CARDS];
+            for (int bc = 0; bc < NUM_BOARD_CARDS; bc++) {
+                Node nextNode = node.childNodes[bc];
+                nodeValue = Util.arrayAdd(nodeValue, Util.arrayMultC(1 / NUM_BOARD_CARDS, exploit(nextNode, pi, pni, plyr_i)));
+            }
+            return nodeValue;
+        } else if (node.is_terminal) {
             double[] nodeValue = new double[NUM_CARDS];
             for (int pic = 0; pic < NUM_CARDS; pic++) {
 
@@ -232,9 +233,7 @@ public class Trainer {
             return nodeValue;
         }
 
-        double[] nodeValue = exploitGetValue(history, node, pi, pni, plyr_i);
-
-        return nodeValue;
+        return exploitGetValue(history, node, pi, pni, plyr_i);
     }
 
     private double[] exploitGetValue(String history, Node node, double[] pi, double[] pni, int plyr_i) {
@@ -249,10 +248,10 @@ public class Trainer {
         // LINE 22
         for (int a = 0; a < NUM_ACTIONS; a++) {
             if (node.validActions[a]) {
-                String nextHistory = history + ACTION_NAMES[a];
+                Node nextNode = node.childNodes[a];
                 if (player == plyr_i) {
                     // LINE 24-27
-                    node.values[a] = exploit(nextHistory, Util.arrayDot(strategy[a], pi), pni, plyr_i);
+                    node.values[a] = exploit(nextNode, Util.arrayDot(strategy[a], pi), pni, plyr_i);
                     for (int c = 0; c < NUM_CARDS; c++) {
                         if (node.values[a][c] > nodeValue[c]) {
                             nodeValue[c] = node.values[a][c];
@@ -260,7 +259,7 @@ public class Trainer {
                     }
                 } else {
                     // LINE 29-31
-                    node.values[a] = exploit(nextHistory, pi, Util.arrayDot(strategy[a], pni), plyr_i);
+                    node.values[a] = exploit(nextNode, pi, Util.arrayDot(strategy[a], pni), plyr_i);
 //                    nodeValue = Util.arrayAdd(nodeValue, Util.arrayDot(strategy[a], node.values[a]));
                     nodeValue = Util.arrayAdd(nodeValue, node.values[a]);
                 }

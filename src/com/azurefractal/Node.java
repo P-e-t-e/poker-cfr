@@ -1,6 +1,7 @@
 package com.azurefractal;
 
 import java.util.Arrays;
+import java.util.TreeMap;
 
 public class Node {
     //infoset is characterized as cards and history, e.g. "1p" or "3pb"
@@ -13,10 +14,12 @@ public class Node {
             values = new double[Trainer.NUM_ACTIONS][Trainer.NUM_CARDS],
             p = new double[2][Trainer.NUM_CARDS];
     Node parent_node;
-    Node child_node;
+    Node[] childNodes = new Node[Trainer.NUM_ACTIONS];
     boolean is_terminal = false;
+    boolean is_boardnode = false;
+    int street_number = 0;
 
-    Node(boolean[] validActions, String infoSet) {
+    Node(boolean[] validActions, String infoSet, int street_number) {
         this.validActions = validActions;
         this.infoSet = infoSet;
         for (int a = 0; a < Trainer.NUM_ACTIONS; a++) {
