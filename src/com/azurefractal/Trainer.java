@@ -23,17 +23,29 @@ public class Trainer {
     }
 
     public double calculateExploitabilityFor(int exploiter) {
+        double[] pi = Util.arrayFull(1.0 / NUM_CARDS, NUM_CARDS);
+        double[] pni = Util.arrayFull(1.0 / NUM_CARDS, NUM_CARDS);
+        double[] card_value = exploit("", pi, pni, exploiter);
         double exploitative_value = 0.0;
-        double[] card_value = findNodeValue("", exploiter);
         for (int c = 0; c < NUM_CARDS; c++) {
             exploitative_value += card_value[c] / NUM_CARDS;
 //            System.out.print("Value while holding card:");
 //            System.out.println(c);
-//            System.out.println(card_value);
+//            System.out.println(Arrays.toString(card_value));
         }
-        System.out.println("Value in total:");
-        System.out.println(exploitative_value);
         return exploitative_value;
+
+//        double exploitative_value = 0.0;
+//        double[] card_value = findNodeValue("", exploiter);
+//        for (int c = 0; c < NUM_CARDS; c++) {
+//            exploitative_value += card_value[c] / NUM_CARDS;
+////            System.out.print("Value while holding card:");
+////            System.out.println(c);
+////            System.out.println(Arrays.toString(card_value));
+//        }
+////        System.out.println("Value in total:");
+////        System.out.println(exploitative_value);
+//        return exploitative_value;
     }
 
     private double[] findNodeValue(String history, int exploiter) {
@@ -54,14 +66,28 @@ public class Trainer {
 //                System.out.println(Arrays.deepToString(node.p));
                 for (int pic = 0; pic < NUM_CARDS; pic++) {
                     int oppCount = 0;
+                    double opponentUnblockedSum = 0;
                     for (int pnic = 0; pnic < NUM_CARDS; pnic++) {
                         if (pic != pnic) {
-                            nodeValue[pic] += node.p[victim][pnic] * determineShowdownValue(history, exploiter, victim);
+
+                            double dts = determineShowdownValue(history, pic, pnic);
+                            nodeValue[pic] += node.p[victim][pnic] * dts;
                             oppCount += 1;
+                            opponentUnblockedSum += node.p[victim][pnic];
                         }
+//                        System.out.println("expl");
+//                        System.out.println(exploiter);
+//                        System.out.println(history);
+//                        System.out.println(pic);
+//                        System.out.println(pnic);
+//                        System.out.println(nodeValue[pic]);
+//                        System.out.println(node.p[victim][pnic]);
                     }
-                    if (oppCount > 0) {
-                        nodeValue[pic] /= oppCount;
+//                    if (oppCount > 0) {
+//                        nodeValue[pic] /= oppCount;
+//                    }
+                    if (opponentUnblockedSum > 0) {
+                        nodeValue[pic] /= opponentUnblockedSum;
                     }
                 }
                 return nodeValue;
@@ -89,15 +115,20 @@ public class Trainer {
             if (node.is_terminal) {
                 for (int pic = 0; pic < NUM_CARDS; pic++) {
                     int oppCount = 0;
+                    double opponentUnblockedSum = 0;
                     for (int pnic = 0; pnic < NUM_CARDS; pnic++) {
                         if (pic != pnic) {
                             // Note the minus sign due to player not being exploiter.
-                            nodeValue[pic] += node.p[victim][pnic] * -determineShowdownValue(history, victim, exploiter);
+                            nodeValue[pic] += node.p[victim][pnic] * -determineShowdownValue(history, pnic, pic);
                             oppCount += 1;
+                            opponentUnblockedSum += node.p[victim][pnic];
                         }
                     }
-                    if (oppCount > 0) {
-                        nodeValue[pic] /= oppCount;
+//                    if (oppCount > 0) {
+//                        nodeValue[pic] /= oppCount;
+//                    }
+                    if (opponentUnblockedSum > 0) {
+                        nodeValue[pic] /= opponentUnblockedSum;
                     }
                 }
                 return nodeValue;
@@ -110,8 +141,10 @@ public class Trainer {
                         double[] value = findNodeValue(nextHistory, exploiter);
                         for (int ec = 0; ec < NUM_CARDS; ec++) {
                             for (int vc = 0; vc < NUM_CARDS; vc++) {
-                                nodeValue[ec] += value[ec] * strategy[a][vc] * node.p[victim][vc];
-                                normalization[ec] += strategy[a][vc] * node.p[victim][vc];
+                                if (ec != vc) {
+                                    nodeValue[ec] += value[ec] * strategy[a][vc] * node.p[victim][vc];
+                                    normalization[ec] += strategy[a][vc] * node.p[victim][vc];
+                                }
                             }
                         }
                     }
@@ -155,55 +188,6 @@ public class Trainer {
         return 0.0;
     }
 
-//    private void assignReachProbabilities() {
-//        for (Node n : nodeMap.values()) {
-//            n.reach_prob = new double[NUM_CARDS][NUM_CARDS];
-//        }
-//        for (int card0 = 0; card0 < NUM_CARDS; card0++) {
-//            for (int card1 = 0; card1 < NUM_CARDS; card1++) {
-////                assignNodeReachProb("", card0, card1, 1.0 / NUM_CARDS, 1.0 / NUM_CARDS);
-//                if (card0 != card1) {
-//                    assignNodeReachProb("", card0, card1, 1.0 / (NUM_CARDS * (NUM_CARDS - 1)));
-//                }
-//            }
-//        }
-//    }
-//
-//    private void assignNodeReachProb(String history, int card0, int card1, double prob) {
-//        // Assign the reach probability
-//        int player = history.length() % 2;
-//        // On even turns, it is plyr0's turn to act. On odd turns, it is plyr1's turn to act.
-//        String infoSet = (player == 0) ? card0 + history : card1 + history;
-//        Node node = nodeMap.get(infoSet);
-//
-//        if (node == null) {
-//            System.out.println("Null node encountered");
-//            System.out.println(infoSet);
-//            return;
-//        } else {
-//            node.reach_prob[card0][card1] += prob;
-//        }
-//
-//        // Base case: terminal node
-//        if (node.is_terminal) {
-//            return;
-//        }
-//
-//        double[] strategy = node.getActualStrategy();
-//
-//        for (int a = 0; a < NUM_ACTIONS; a++) {
-//            if (node.validActions[a]) {
-//                String nextHistory = history + ACTION_NAMES[a];
-//                if (player == 0) {
-//                    assignNodeReachProb(nextHistory, card0, card1, prob * strategy[a]);
-//                } else {
-//                    assignNodeReachProb(nextHistory, card0, card1, prob * strategy[a]);
-//                }
-//            }
-//        }
-//
-//    }
-
     public void train(int iterations) {
         int[] cards = java.util.stream.IntStream.rangeClosed(0, NUM_CARDS - 1).toArray();
         double[] value0 = new double[NUM_CARDS];
@@ -226,18 +210,18 @@ public class Trainer {
                 }
             }
 
-            if (i % 1000 == 0 && i != 0) {
+            if (i % 100000 == 0 && i != 0) {
                 System.out.print("Net Expl:");
                 System.out.println(i);
                 System.out.println(calculateNetExploitability());
-                System.out.println("Average game value 0: " + Arrays.toString(Util.arrayMultC(1.0 / i, value0)));
-                System.out.println("Average game value 1: " + Arrays.toString(Util.arrayMultC(1.0 / i, value1)));
+//                System.out.println("Average game value 0: " + Arrays.toString(Util.arrayMultC(1.0 / i, value0)));
+//                System.out.println("Average game value 1: " + Arrays.toString(Util.arrayMultC(1.0 / i, value1)));
                 for (Node n : nodeMap.values()) {
                     if (!n.is_terminal) {
 //                        System.out.println(n);
-                        System.out.print(n.infoSet);
+//                        System.out.print(n.infoSet);
 //                        System.out.println(Arrays.deepToString(n.getStrategy()));
-                        System.out.println(Arrays.deepToString(n.p));
+//                        System.out.println(Arrays.deepToString(n.p));
                     }
                 }
             }
@@ -334,8 +318,80 @@ public class Trainer {
         return nodeValue;
     }
 
+    private double[] exploit(String history, double[] pi, double[] pni, int plyr_i) {
+        int plays = history.length();
+        int n_calls = 0;
+        char delimiter = 'c';
+        for (int i = 0; i < history.length(); n_calls += (history.charAt(i++) == delimiter ? 1 : 0)) ;
+        int player = plays % 2;
+        int plyr_not_i = 1 - plyr_i;
+
+        Node node = nodeMap.get(history);
+
+        node.p[0] = (plyr_i == 0) ? pi : pni;
+        node.p[1] = (plyr_i == 1) ? pi : pni;
+        if (node.is_terminal) {
+            double[] nodeValue = new double[NUM_CARDS];
+            for (int pic = 0; pic < NUM_CARDS; pic++) {
+
+                int oppCount = 0;
+                for (int pnic = 0; pnic < NUM_CARDS; pnic++) {
+                    if (pic != pnic) {
+                        nodeValue[pic] += node.p[plyr_not_i][pnic] *
+                                (player == plyr_i ?
+                                        determineShowdownValue(history, pic, pnic) :
+                                        -determineShowdownValue(history, pnic, pic));
+                        oppCount += 1;
+                    }
+                }
+
+                if (oppCount > 0) {
+                    nodeValue[pic] /= oppCount;
+                }
+            }
+            return nodeValue;
+        }
+
+        double[] nodeValue = exploitGetValue(history, node, pi, pni, plyr_i);
+
+        return nodeValue;
+    }
+
+    private double[] exploitGetValue(String history, Node node, double[] pi, double[] pni, int plyr_i) {
+        // LINE 20, 21
+        int player = history.length() % 2;
+        double[] nodeValue = new double[NUM_CARDS];
+        if (player == plyr_i) {
+            nodeValue = Util.arrayFull(-Trainer.INF, NUM_CARDS);
+        }
+        double[][] strategy = node.getStrategy();
+
+        // LINE 22
+        for (int a = 0; a < NUM_ACTIONS; a++) {
+            if (node.validActions[a]) {
+                String nextHistory = history + ACTION_NAMES[a];
+                if (player == plyr_i) {
+                    // LINE 24-27
+                    node.values[a] = exploit(nextHistory, Util.arrayDot(strategy[a], pi), pni, plyr_i);
+                    for (int c = 0; c < NUM_CARDS; c++) {
+                        if (node.values[a][c] > nodeValue[c]) {
+                            nodeValue[c] = node.values[a][c];
+                        }
+                    }
+                } else {
+                    // LINE 29-31
+                    node.values[a] = exploit(nextHistory, pi, Util.arrayDot(strategy[a], pni), plyr_i);
+//                    nodeValue = Util.arrayAdd(nodeValue, Util.arrayDot(strategy[a], node.values[a]));
+                    nodeValue = Util.arrayAdd(nodeValue, node.values[a]);
+                }
+            }
+        }
+
+        return nodeValue;
+    }
+
     public static void main(String[] args) {
-        int iterations = 10000;
+        int iterations = 10000000;
         Trainer trainer = new Trainer();
         trainer.train(iterations);
         System.out.println("Net Expl:");
