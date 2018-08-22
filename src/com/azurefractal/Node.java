@@ -15,7 +15,6 @@ public class Node {
     Node parent_node;
     Node child_node;
     boolean is_terminal = false;
-    double[][] reach_prob = new double[Trainer.NUM_CARDS][Trainer.NUM_CARDS];
 
     Node(boolean[] validActions, String infoSet) {
         this.validActions = validActions;

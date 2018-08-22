@@ -28,11 +28,12 @@ public class Trainer {
         double[] card_value = exploit("", pi, pni, exploiter);
         double exploitative_value = 0.0;
         for (int c = 0; c < NUM_CARDS; c++) {
-            exploitative_value += card_value[c] / NUM_CARDS;
-//            System.out.print("Value while holding card:");
-//            System.out.println(c);
-//            System.out.println(Arrays.toString(card_value));
+            exploitative_value += card_value[c];
         }
+        System.out.print("Game Value:");
+        System.out.println(exploitative_value);
+        System.out.println("Value while holding card:");
+        System.out.println(Arrays.toString(card_value));
         return exploitative_value;
     }
 
@@ -67,7 +68,7 @@ public class Trainer {
         return 0.0;
     }
 
-    public void train(int iterations) {
+    public void train(int iterations, int render_intvl) {
         int[] cards = java.util.stream.IntStream.rangeClosed(0, NUM_CARDS - 1).toArray();
         double[] value0 = new double[NUM_CARDS];
         double[] value1 = new double[NUM_CARDS];
@@ -89,7 +90,7 @@ public class Trainer {
                 }
             }
 
-            if (i % 100000 == 0 && i != 0) {
+            if (i % render_intvl == 0 && i != 0) {
                 System.out.print("Net Expl:");
                 System.out.println(i);
                 System.out.println(calculateNetExploitability());
@@ -272,13 +273,12 @@ public class Trainer {
     public static void main(String[] args) {
         int iterations = 10000000;
         Trainer trainer = new Trainer();
-        trainer.train(iterations);
-        System.out.println("Net Expl:");
-//        System.out.println(trainer.calculateNetExploitability());
-//        for (Node n : trainer.nodeMap.values()) {
-//            System.out.print(n.infoSet);
-//            System.out.println(Arrays.deepToString(n.reach_prob));
-//        }
+        trainer.train(iterations, 1000000);
+
+        for (Node n : trainer.nodeMap.values()) {
+            System.out.print(n.infoSet);
+            System.out.println(Arrays.deepToString(n.getActualStrategy()));
+        }
 //        System.out.println(trainer.determineShowdownValue("bc", 0, 1));
 //        System.out.println(trainer.determineShowdownValue("bc", 2, 1));
     }
