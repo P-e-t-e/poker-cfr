@@ -62,7 +62,9 @@ public class Node {
         char delimiter = 'c';
         for (int i = 0; i < infoSet.length(); n_calls += (infoSet.charAt(i++) == delimiter ? 1 : 0)) ;
 
-        int winSize = (n_calls * (1 * Trainer.RELATIVE_BET_SIZE) + 1);
+        // winSize is half of the pot.
+        double winSize = Math.pow(1.0 + 2.0 * Trainer.RELATIVE_BET_SIZE, n_calls);
+
         boolean terminalPass = infoSet.charAt(plays - 1) == 'p';
         boolean terminalCall = infoSet.charAt(plays - 1) == 'c';
         String endingString = infoSet.substring(plays - 2, plays);

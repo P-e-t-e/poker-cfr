@@ -13,7 +13,8 @@ public class Trainer {
     public static final int[] board = {PokerCard.to_int("2s"), PokerCard.to_int("4h"), PokerCard.to_int("6s")};
     public static final int NUM_CARDS = RANGES.length;
     public static final int NUM_BOARD_CARDS = 1;
-    public static final int RELATIVE_BET_SIZE = 1;
+    public static final double RELATIVE_BET_SIZE = 0.5;
+    public static final int BETS_LEFT = 3;
     public static final Random random = new Random(0);
     public TreeMap<String, Node> nodeMap = new TreeMap<>();
     public Node rootNode = new Node(new boolean[]{true, true, false}, "", 0);
@@ -43,7 +44,8 @@ public class Trainer {
         double[] value1 = new double[NUM_CARDS];
         Tree.buildTree(rootNode, nodeMap);
 //        for (Node n : nodeMap.values()) {
-//            System.out.println(n);
+//            System.out.print(n.infoSet);
+//            System.out.println(Arrays.toString(n.validActions));
 //        }
 
         double[] pi = Util.arrayFull(1.0 / NUM_CARDS, NUM_CARDS);
@@ -79,9 +81,7 @@ public class Trainer {
 
     //This is a recursive function that returns game value
     private double[] cfr(Node node, double[] pi, double[] pni, int plyr_i) {
-        String history = node.infoSet;
-        int plays = history.length();
-        int player = plays % 2;
+        int player = node.player;
         int plyr_not_i = 1 - plyr_i;
 
         node.p[0] = (plyr_i == 0) ? pi : pni;
@@ -104,8 +104,6 @@ public class Trainer {
                                 (player == plyr_i ?
                                         node.showdownValue[pic][pnic] :
                                         -node.showdownValue[pnic][pic]);
-//                                        determineShowdownValue(history, pic, pnic) :
-//                                        -determineShowdownValue(history, pnic, pic));
                         opponentUnblockedSum += node.p[plyr_not_i][pnic];
                         oppCount += 1;
                     }
@@ -122,12 +120,12 @@ public class Trainer {
             return nodeValue;
         }
 
-        return vncfrGetValue(history, node, pi, pni, plyr_i);
+        return vncfrGetValue(node, pi, pni, plyr_i);
     }
 
-    private double[] vncfrGetValue(String history, Node node, double[] pi, double[] pni, int plyr_i) {
+    private double[] vncfrGetValue(Node node, double[] pi, double[] pni, int plyr_i) {
         // LINE 20, 21
-        int player = history.length() % 2;
+        int player = node.player;
         double[] nodeValue = new double[NUM_CARDS];
         double[][] strategy = node.getStrategy();
 
@@ -168,9 +166,7 @@ public class Trainer {
     }
 
     private double[] exploit(Node node, double[] pi, double[] pni, int plyr_i) {
-        String history = node.infoSet;
-        int plays = history.length();
-        int player = plays % 2;
+        int player = node.player;
         int plyr_not_i = 1 - plyr_i;
 
         node.p[0] = (plyr_i == 0) ? pi : pni;
@@ -193,8 +189,6 @@ public class Trainer {
                                 (player == plyr_i ?
                                         node.showdownValue[pic][pnic] :
                                         -node.showdownValue[pnic][pic]);
-//                                        determineShowdownValue(history, pic, pnic) :
-//                                        -determineShowdownValue(history, pnic, pic));
                         oppCount += 1;
                     }
                 }
@@ -206,12 +200,12 @@ public class Trainer {
             return nodeValue;
         }
 
-        return exploitGetValue(history, node, pi, pni, plyr_i);
+        return exploitGetValue(node, pi, pni, plyr_i);
     }
 
-    private double[] exploitGetValue(String history, Node node, double[] pi, double[] pni, int plyr_i) {
+    private double[] exploitGetValue(Node node, double[] pi, double[] pni, int plyr_i) {
         // LINE 20, 21
-        int player = history.length() % 2;
+        int player = node.player;
         double[] nodeValue = new double[NUM_CARDS];
         if (player == plyr_i) {
             nodeValue = Util.arrayFull(-Trainer.INF, NUM_CARDS);
@@ -243,7 +237,7 @@ public class Trainer {
     }
 
     public static void main(String[] args) {
-        int iterations = 1000000;
+        int iterations = 100000;
         Trainer trainer = new Trainer();
         trainer.train(iterations, iterations / 10);
 
@@ -251,8 +245,6 @@ public class Trainer {
             System.out.print(n.infoSet);
             System.out.println(Arrays.deepToString(n.getActualStrategy()));
         }
-//        System.out.println(trainer.determineShowdownValue("bc", 0, 1));
-//        System.out.println(trainer.determineShowdownValue("bc", 2, 1));
     }
 
 }
