@@ -3,7 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="2351c424-00ab-4de9-a9b8-7b92b4437fe8" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/azurefractal/Node.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/azurefractal/Node.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/poker-cfr/com/azurefractal/Trainer.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/poker-cfr/com/azurefractal/Trainer.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/com/azurefractal/Trainer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/azurefractal/Trainer.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/com/azurefractal/Tree.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/azurefractal/Tree.java" afterDir="false" />
     </list>
@@ -47,14 +47,14 @@
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="java" value="16754" />
-          <entry key="txt" value="612" />
+          <entry key="java" value="16789" />
+          <entry key="txt" value="707" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="JAVA" value="16754" />
-          <entry key="PLAIN_TEXT" value="612" />
+          <entry key="JAVA" value="16789" />
+          <entry key="PLAIN_TEXT" value="707" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.vcs.git.usages">
@@ -67,11 +67,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/com/azurefractal/Trainer.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="150">
-              <caret line="14" column="24" lean-forward="true" selection-start-line="14" selection-start-column="24" selection-end-line="14" selection-end-column="24" />
+            <state relative-caret-position="38">
+              <caret line="98" lean-forward="true" selection-start-line="98" selection-end-line="98" />
             </state>
           </provider>
         </entry>
@@ -115,16 +115,16 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/com/azurefractal/Tree.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="525">
-              <caret line="35" column="25" lean-forward="true" selection-start-line="35" selection-start-column="25" selection-end-line="35" selection-end-column="25" />
+            <state relative-caret-position="135">
+              <caret line="9" column="33" selection-start-line="9" selection-start-column="33" selection-end-line="9" selection-end-column="33" />
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/com/azurefractal/Node.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="613">
+            <state relative-caret-position="1095">
               <caret line="73" column="94" selection-start-line="73" selection-start-column="94" selection-end-line="73" selection-end-column="94" />
               <folding>
                 <element signature="imports" expanded="true" />
@@ -173,7 +173,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>findNode</find>
       <find>strate</find>
       <find>reac</find>
       <find>normalization</find>
@@ -201,8 +200,9 @@
       <find>getstr</find>
       <find>nodeMap.g</find>
       <find>(history.charAt(i++</find>
-      <find>history</find>
       <find>nodeMap</find>
+      <find>history</find>
+      <find>determ</find>
     </findStrings>
     <replaceStrings>
       <replace>victim</replace>
@@ -240,8 +240,8 @@
         <option value="$PROJECT_DIR$/src/com/azurefractal/Main.java" />
         <option value="$PROJECT_DIR$/src/com/azurefractal/BoardcardNode.java" />
         <option value="$PROJECT_DIR$/src/com/azurefractal/BoardNode.java" />
-        <option value="$PROJECT_DIR$/src/com/azurefractal/Tree.java" />
         <option value="$PROJECT_DIR$/src/com/azurefractal/Node.java" />
+        <option value="$PROJECT_DIR$/src/com/azurefractal/Tree.java" />
         <option value="$PROJECT_DIR$/src/com/azurefractal/Trainer.java" />
       </list>
     </option>
@@ -295,7 +295,7 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1534986274151" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1534986559511" />
     <property name="settings.editor.selected.configurable" value="VisualVMLauncher" />
   </component>
   <component name="RecentsManager">
@@ -440,7 +440,14 @@
       <option name="project" value="LOCAL" />
       <updated>1534951706872</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="Moved some variables to be stored in the Nodes to avoid recomputation on each traversal.">
+      <created>1534986366650</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1534986366650</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TodoView">
@@ -529,7 +536,8 @@
     <MESSAGE value="Exploitability calculation now works." />
     <MESSAGE value="Exploitability calculation now uses average strategy instead." />
     <MESSAGE value="CFR and exploitability calculations now traverse tree according to childNodes rather than using TreeMap. Added usage of BoardNodes (which currently do nothing but split the tree) and future streets." />
-    <option name="LAST_COMMIT_MESSAGE" value="CFR and exploitability calculations now traverse tree according to childNodes rather than using TreeMap. Added usage of BoardNodes (which currently do nothing but split the tree) and future streets." />
+    <MESSAGE value="Moved some variables to be stored in the Nodes to avoid recomputation on each traversal." />
+    <option name="LAST_COMMIT_MESSAGE" value="Moved some variables to be stored in the Nodes to avoid recomputation on each traversal." />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">
@@ -618,13 +626,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/azurefractal/Unique5.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="30">
-          <caret line="2" column="13" selection-start-line="2" selection-start-column="13" selection-end-line="2" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/com/azurefractal/HashValues.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="30">
@@ -653,29 +654,36 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/azurefractal/Tree.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="525">
-          <caret line="35" column="25" lean-forward="true" selection-start-line="35" selection-start-column="25" selection-end-line="35" selection-end-column="25" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/azurefractal/Trainer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="150">
-          <caret line="14" column="24" lean-forward="true" selection-start-line="14" selection-start-column="24" selection-end-line="14" selection-end-column="24" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/com/azurefractal/Node.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="613">
+        <state relative-caret-position="1095">
           <caret line="73" column="94" selection-start-line="73" selection-start-column="94" selection-end-line="73" selection-end-column="94" />
           <folding>
             <element signature="imports" expanded="true" />
             <element signature="e#4163#4164#0" expanded="true" />
             <element signature="e#4261#4262#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/azurefractal/Unique5.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="30">
+          <caret line="2" column="13" selection-start-line="2" selection-start-column="13" selection-end-line="2" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/azurefractal/Tree.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="135">
+          <caret line="9" column="33" selection-start-line="9" selection-start-column="33" selection-end-line="9" selection-end-column="33" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/azurefractal/Trainer.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="38">
+          <caret line="98" lean-forward="true" selection-start-line="98" selection-end-line="98" />
         </state>
       </provider>
     </entry>

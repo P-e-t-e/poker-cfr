@@ -38,37 +38,6 @@ public class Trainer {
         return exploitative_value;
     }
 
-    private double determineShowdownValue(String history, int player_card, int opp_card) {
-        int plays = history.length();
-        int n_calls = 0;
-        char delimiter = 'c';
-        for (int i = 0; i < history.length(); n_calls += (history.charAt(i++) == delimiter ? 1 : 0)) ;
-
-        int winSize = (n_calls * (1 * RELATIVE_BET_SIZE) + 1);
-        boolean terminalPass = history.charAt(plays - 1) == 'p';
-        boolean terminalCall = history.charAt(plays - 1) == 'c';
-        String endingString = history.substring(plays - 2, plays);
-
-        int[] player_hole_cards = RANGES[player_card];
-        int[] opp_hole_cards = RANGES[opp_card];
-
-        boolean isPlayerCardHigher = HandEvaluator.evaluateHandToInt(board[0], board[1], board[2], player_hole_cards[0], player_hole_cards[1])
-                < HandEvaluator.evaluateHandToInt(board[0], board[1], board[2], opp_hole_cards[0], opp_hole_cards[1]);
-
-        if (terminalPass) {
-            if (endingString.equals("bp")) {
-                return winSize;
-            } else if (endingString.equals("pp")) {
-                return (isPlayerCardHigher ? winSize : -winSize);
-            }
-        } else if (terminalCall) {
-            return (isPlayerCardHigher ? winSize : -winSize);
-        }
-        System.out.println("ERROR: The following is not a terminal node");
-        System.out.println(history);
-        return 0.0;
-    }
-
     public void train(int iterations, int render_intvl) {
         double[] value0 = new double[NUM_CARDS];
         double[] value1 = new double[NUM_CARDS];
@@ -133,8 +102,10 @@ public class Trainer {
                     if (pic != pnic) {
                         nodeValue[pic] += node.p[plyr_not_i][pnic] *
                                 (player == plyr_i ?
-                                        determineShowdownValue(history, pic, pnic) :
-                                        -determineShowdownValue(history, pnic, pic));
+                                        node.showdownValue[pic][pnic] :
+                                        -node.showdownValue[pnic][pic]);
+//                                        determineShowdownValue(history, pic, pnic) :
+//                                        -determineShowdownValue(history, pnic, pic));
                         opponentUnblockedSum += node.p[plyr_not_i][pnic];
                         oppCount += 1;
                     }
@@ -220,8 +191,10 @@ public class Trainer {
                     if (pic != pnic) {
                         nodeValue[pic] += node.p[plyr_not_i][pnic] *
                                 (player == plyr_i ?
-                                        determineShowdownValue(history, pic, pnic) :
-                                        -determineShowdownValue(history, pnic, pic));
+                                        node.showdownValue[pic][pnic] :
+                                        -node.showdownValue[pnic][pic]);
+//                                        determineShowdownValue(history, pic, pnic) :
+//                                        -determineShowdownValue(history, pnic, pic));
                         oppCount += 1;
                     }
                 }
