@@ -20,39 +20,33 @@ public class Tree {
                 int lenInfoSet = infoSet.length();
                 String endingString1 = (lenInfoSet > 1) ? infoSet.substring(lenInfoSet - 1, lenInfoSet) : "";
                 String endingString2 = (lenInfoSet > 1) ? infoSet.substring(lenInfoSet - 2, lenInfoSet) : "";
-                if (endingString2.equals("bp")) {
-                    // Terminal Node
-                    node.is_terminal = true;
-                } else {
-                    if (endingString1.equals("c") || endingString2.equals("pp")) {
-                        street_number += 1;
-                        if (street_number >= Integer.parseInt(rules.get("n_streets"))) {
-                            node.is_terminal = true;
-                        } else {
-                            node.is_boardnode = true;
-                            for (int bc = 0; bc < Trainer.NUM_BOARD_CARDS; bc++) {
-                                String newInfoSet = infoSet + "." + Integer.toString(bc) + ".";
-                                if (newInfoSet.length() % 2 == 1) {
-                                    newInfoSet += ".";
-                                }
-                                Node newNode = addNewNode(newInfoSet, node, nodeMap, street_number);
-                                node.childNodes[bc] = newNode;
-                                buildTreeFrom(newNode, nodeMap, rules, street_number);
+
+                if (endingString1.equals("c") || endingString2.equals("pp")) {
+                    street_number += 1;
+                    if (street_number < Integer.parseInt(rules.get("n_streets"))) {
+                        node.is_boardnode = true;
+                        for (int bc = 0; bc < Trainer.NUM_BOARD_CARDS; bc++) {
+                            String newInfoSet = infoSet + "." + Integer.toString(bc) + ".";
+                            if (newInfoSet.length() % 2 == 1) {
+                                newInfoSet += ".";
                             }
+                            Node newNode = addNewNode(newInfoSet, node, nodeMap, street_number);
+                            node.childNodes[bc] = newNode;
+                            buildTreeFrom(newNode, nodeMap, rules, street_number);
                         }
-                    } else {
-                        // Non terminal Node
-                        String newInfoSet = infoSet + Trainer.ACTION_NAMES[a];
-                        boolean isBoardNodeNext = checkIfBoardNodeNext(newInfoSet, street_number, rules);
-                        Node newNode;
-                        if (isBoardNodeNext) {
-                            newNode = addNewBoardNode(newInfoSet, node, nodeMap, street_number);
-                        } else {
-                            newNode = addNewNode(newInfoSet, node, nodeMap, street_number);
-                        }
-                        node.childNodes[a] = newNode;
-                        buildTreeFrom(newNode, nodeMap, rules, street_number);
                     }
+                } else if (!node.is_terminal) {
+                    // Non terminal Node
+                    String newInfoSet = infoSet + Trainer.ACTION_NAMES[a];
+                    boolean isBoardNodeNext = checkIfBoardNodeNext(newInfoSet, street_number, rules);
+                    Node newNode;
+                    if (isBoardNodeNext) {
+                        newNode = addNewBoardNode(newInfoSet, node, nodeMap, street_number);
+                    } else {
+                        newNode = addNewNode(newInfoSet, node, nodeMap, street_number);
+                    }
+                    node.childNodes[a] = newNode;
+                    buildTreeFrom(newNode, nodeMap, rules, street_number);
                 }
             }
         }

@@ -9,15 +9,15 @@ import java.util.TreeMap;
 public class Trainer {
     public static final String[] ACTION_NAMES = {"p", "b", "c"};
     public static final int NUM_ACTIONS = 3;
-    private static final int[][] RANGES = Ranges.get_kuhn_range();
-    private static final int[] board = {PokerCard.to_int("2s"), PokerCard.to_int("4h"), PokerCard.to_int("6s")};
+    public static final int[][] RANGES = Ranges.get_kuhn_range();
+    public static final int[] board = {PokerCard.to_int("2s"), PokerCard.to_int("4h"), PokerCard.to_int("6s")};
     public static final int NUM_CARDS = RANGES.length;
     public static final int NUM_BOARD_CARDS = 1;
-    private static final int RELATIVE_BET_SIZE = 1;
-    private static final Random random = new Random(0);
+    public static final int RELATIVE_BET_SIZE = 1;
+    public static final Random random = new Random(0);
     public TreeMap<String, Node> nodeMap = new TreeMap<>();
     public Node rootNode = new Node(new boolean[]{true, true, false}, "", 0);
-    private static final int INF = 999999;
+    public static final int INF = 999999;
 
     public double calculateNetExploitability() {
         return 0.5 * (calculateExploitabilityFor(0) + calculateExploitabilityFor(1));
