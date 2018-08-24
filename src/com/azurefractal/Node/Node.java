@@ -1,29 +1,30 @@
-package com.azurefractal;
+package com.azurefractal.Node;
+
+import com.azurefractal.HandEvaluator;
+import com.azurefractal.Trainer;
 
 import java.util.Arrays;
-import java.util.TreeMap;
 
 public class Node {
     //infoset is characterized as cards and infoSet, e.g. "1p" or "3pb"
-    String infoSet;
-    boolean[] validActions;
-    int numValidActions;
-    int player;
-    double[][] showdownValue = new double[Trainer.NUM_CARDS][Trainer.NUM_CARDS];
-    double[][] regretSum = new double[Trainer.NUM_ACTIONS][Trainer.NUM_CARDS],
+    public String infoSet;
+    public boolean[] validActions;
+    public int numValidActions;
+    public int player;
+    public double[][] showdownValue;
+    public double[][] regretSum = new double[Trainer.NUM_ACTIONS][Trainer.NUM_CARDS],
             strategy = new double[Trainer.NUM_ACTIONS][Trainer.NUM_CARDS],
             strategySum = new double[Trainer.NUM_ACTIONS][Trainer.NUM_CARDS],
             values = new double[Trainer.NUM_ACTIONS][Trainer.NUM_CARDS],
             p = new double[2][Trainer.NUM_CARDS];
-    Node parent_node;
-    Node[] childNodes = new Node[Trainer.NUM_ACTIONS];
-    boolean is_terminal = false;
-    boolean is_boardnode = false;
-    int street_number = 0;
+    public Node parent_node;
+    public Node[] childNodes;
+    public boolean is_terminal = false;
 
-    Node(boolean[] validActions, String infoSet, int street_number) {
+    public Node(boolean[] validActions, String infoSet) {
         this.validActions = validActions;
         this.infoSet = infoSet;
+        childNodes = new Node[Trainer.NUM_ACTIONS];
         for (int a = 0; a < Trainer.NUM_ACTIONS; a++) {
             if (this.validActions[a]) {
                 this.numValidActions += 1;
@@ -41,22 +42,9 @@ public class Node {
         if (endingString2.equals("bp") || endingString1.equals("c") || endingString2.equals("pp")) {
             this.is_terminal = true;
         }
-        if (this.is_terminal) {
-            calculateShowdownValue();
-        }
     }
 
-    public void calculateShowdownValue() {
-        for (int pc = 0; pc < Trainer.NUM_CARDS; pc++) {
-            for (int oc = 0; oc < Trainer.NUM_CARDS; oc++) {
-                if (pc != oc) {
-                    showdownValue[pc][oc] = determineShowdownValue(pc, oc);
-                }
-            }
-        }
-    }
-
-    private double determineShowdownValue(int player_card, int opp_card) {
+    public double determineShowdownValue(int player_card, int opp_card) {
         int plays = infoSet.length();
         int n_calls = 0;
         char delimiter = 'c';
@@ -136,7 +124,7 @@ public class Node {
 
     public double[][] getActualStrategy() {
         return getAverageStrategy();
-//            return getStrategy(0);
+//            return getStrategy();
     }
 
     //Return average strategy

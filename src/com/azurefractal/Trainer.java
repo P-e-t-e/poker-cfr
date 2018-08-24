@@ -1,7 +1,7 @@
 package com.azurefractal;
 
-import javax.lang.model.type.NullType;
-import java.lang.reflect.Array;
+import com.azurefractal.Node.*;
+
 import java.util.Arrays;
 import java.util.Random;
 import java.util.TreeMap;
@@ -12,7 +12,7 @@ public class Trainer {
     public static final int[][] RANGES = Ranges.get_n_card_deck_range(12);
     public static final int[] board = {PokerCard.to_int("2s"), PokerCard.to_int("4h"), PokerCard.to_int("6s")};
     public static final int NUM_CARDS = RANGES.length;
-    public static final int NUM_BOARD_CARDS = 2;
+    public static final int NUM_BOARD_CARDS = 50;
     public static final double RELATIVE_BET_SIZE = 0.5;
     public static final int BETS_LEFT = 3;
     public static final Random random = new Random(0);
@@ -96,7 +96,7 @@ public class Trainer {
             Node nextNode = node.childNodes[bc];
 //            return cfr(nextNode, Util.arrayMultC(1 / NUM_BOARD_CARDS, pi), Util.arrayMultC(1 / NUM_BOARD_CARDS, pni), plyr_i);
             return cfr(nextNode, pi, pni, plyr_i);
-        } else if (node.is_terminal) {
+        } else if (node instanceof TerminalNode) {
             return find_terminal_node_value(node, player, plyr_i, plyr_not_i);
         }
 
