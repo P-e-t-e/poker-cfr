@@ -9,15 +9,15 @@ import java.util.TreeMap;
 public class Trainer {
     public static final String[] ACTION_NAMES = {"p", "b", "c"};
     public static final int NUM_ACTIONS = 3;
-    public static final int[][] RANGES = Ranges.get_n_card_deck_range(12);
     public static final int[] board = {PokerCard.to_int("2s"), PokerCard.to_int("4h"), PokerCard.to_int("6s")};
+    public static final int[][] RANGES = Ranges.get_n_card_deck_range(52, board);
     public static final int NUM_CARDS = RANGES.length;
-    public static final int NUM_BOARD_CARDS = 50;
+    public static final int NUM_BOARD_CARDS = 1;
     public static final double RELATIVE_BET_SIZE = 0.5;
     public static final int BETS_LEFT = 3;
     public static final Random random = new Random(0);
     public TreeMap<String, Node> nodeMap = new TreeMap<>();
-    public Node rootNode = new Node(new boolean[]{true, true, false}, "", 0);
+    public Node rootNode = new Node(new boolean[]{true, true, false}, "");
     public static final int INF = 999999;
 
     public double calculateNetExploitability() {
@@ -141,8 +141,8 @@ public class Trainer {
                 if (!Util.checkCardBlock(RANGES[pic], RANGES[pnic])) {
                     nodeValue[pic] += node.p[plyr_not_i][pnic] *
                             (player_is_plyr_i ?
-                                    node.showdownValue[pic][pnic] :
-                                    -node.showdownValue[pnic][pic]);
+                                    node.getShowdownValue(pic, pnic) :
+                                    -node.getShowdownValue(pnic, pic));
 //                    opponentUnblockedSum += node.p[plyr_not_i][pnic];
                     oppCount += 1;
                 }
@@ -200,8 +200,8 @@ public class Trainer {
                     if (!Util.checkCardBlock(RANGES[pic], RANGES[pnic])) {
                         nodeValue[pic] += node.p[plyr_not_i][pnic] *
                                 (player == plyr_i ?
-                                        node.showdownValue[pic][pnic] :
-                                        -node.showdownValue[pnic][pic]);
+                                        node.getShowdownValue(pic, pnic) :
+                                        -node.getShowdownValue(pnic, pic));
                         oppCount += 1;
                     }
                 }
@@ -252,7 +252,7 @@ public class Trainer {
     }
 
     public static void main(String[] args) {
-        int iterations = 10000;
+        int iterations = 100;
         Trainer trainer = new Trainer();
         trainer.train(iterations, iterations / 10);
 

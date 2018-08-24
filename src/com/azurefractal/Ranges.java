@@ -88,7 +88,7 @@ public class Ranges {
         return range;
     }
 
-    public static int[][] get_n_card_deck_range(int n) {
+    public static int[][] get_n_card_deck_range(int n, int[] board) {
         int[] deck = new int[52];
         String[] suits = {"c", "d", "h", "s"};
         String[] ranks = {"2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A"};
@@ -96,14 +96,25 @@ public class Ranges {
         int ctr = 0;
         for (int s = 0; s < 4; s++) {
             for (int r = 2; r < 15; r++) {
-                deck[ctr] = PokerCard.to_int(ranks[14 - r] + suits[s]);
-                ctr += 1;
+                int new_card = PokerCard.to_int(ranks[14 - r] + suits[s]);
+                boolean is_clash = false;
+                for (int bc = 0; bc < board.length; bc++) {
+                    if (board[bc] == new_card) {
+                        is_clash = true;
+                    }
+                }
+                if (!is_clash) {
+                    deck[ctr] = new_card;
+                    ctr += 1;
+                }
             }
         }
 
-        int[][] range = new int[(n * (n - 1)) / 2][2];
         int k = 0;
-        for (int i = 0; i < n; i++) {
+        int valid_n = Math.min(n, ctr);
+        int[][] range = new int[(valid_n * (valid_n - 1)) / 2][2];
+
+        for (int i = 0; i < valid_n; i++) {
             for (int j = 0; j < i; j++) {
                 range[k][0] = deck[i];
                 range[k][1] = deck[j];

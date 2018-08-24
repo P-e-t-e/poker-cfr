@@ -8,7 +8,7 @@ public class Tree {
     public static void buildTree(Node rootNode, TreeMap nodeMap) {
         nodeMap.put("", rootNode);
         TreeMap<String, String> rules = new TreeMap<>();
-        rules.put("n_streets", "3");
+        rules.put("n_streets", "2");
         rules.put("eff_stack", "500");
         rules.put("pot_size", "40");
         rules.put("relative_bet_size", "1.0");
