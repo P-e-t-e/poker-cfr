@@ -9,10 +9,10 @@ import java.util.TreeMap;
 public class Trainer {
     public static final String[] ACTION_NAMES = {"p", "b", "c"};
     public static final int NUM_ACTIONS = 3;
-    public static final int[][] RANGES = Ranges.get_kuhn_range();
+    public static final int[][] RANGES = Ranges.get_n_card_deck_range(12);
     public static final int[] board = {PokerCard.to_int("2s"), PokerCard.to_int("4h"), PokerCard.to_int("6s")};
     public static final int NUM_CARDS = RANGES.length;
-    public static final int NUM_BOARD_CARDS = 1;
+    public static final int NUM_BOARD_CARDS = 2;
     public static final double RELATIVE_BET_SIZE = 0.5;
     public static final int BETS_LEFT = 3;
     public static final Random random = new Random(0);
@@ -40,6 +40,8 @@ public class Trainer {
     }
 
     public void train(int iterations, int render_intvl) {
+        System.out.println(RANGES.length);
+        System.out.println(Arrays.deepToString(RANGES));
         double[] value0 = new double[NUM_CARDS];
         double[] value1 = new double[NUM_CARDS];
         Tree.buildTree(rootNode, nodeMap);
@@ -65,8 +67,8 @@ public class Trainer {
                 System.out.print("Net Expl:");
                 System.out.println(i);
                 System.out.println(calculateNetExploitability());
-//                System.out.println("Average game value 0: " + Arrays.toString(Util.arrayMultC(1.0 / i, value0)));
-//                System.out.println("Average game value 1: " + Arrays.toString(Util.arrayMultC(1.0 / i, value1)));
+                System.out.println("Average game value 0: " + Double.toString(Util.arraySum(Util.arrayMultC(1.0 / i, value0))));
+                System.out.println("Average game value 1: " + Double.toString(Util.arraySum(Util.arrayMultC(1.0 / i, value1))));
                 for (Node n : nodeMap.values()) {
                     if (!n.is_terminal) {
 //                        System.out.println(n);
@@ -84,48 +86,21 @@ public class Trainer {
         int player = node.player;
         int plyr_not_i = 1 - plyr_i;
 
+//        intentional_slow_step();
+
         node.p[0] = (plyr_i == 0) ? pi : pni;
         node.p[1] = (plyr_i == 1) ? pi : pni;
 
         if (node instanceof BoardNode) {
             int bc = random.nextInt(NUM_BOARD_CARDS);
             Node nextNode = node.childNodes[bc];
+//            return cfr(nextNode, Util.arrayMultC(1 / NUM_BOARD_CARDS, pi), Util.arrayMultC(1 / NUM_BOARD_CARDS, pni), plyr_i);
             return cfr(nextNode, pi, pni, plyr_i);
         } else if (node.is_terminal) {
-            double[] nodeValue = new double[NUM_CARDS];
-            for (int pic = 0; pic < NUM_CARDS; pic++) {
-                double opponentUnblockedSum = 0;
-                double opponentTotalSum = 0;
-
-                int oppCount = 0;
-                for (int pnic = 0; pnic < NUM_CARDS; pnic++) {
-                    if (pic != pnic) {
-                        nodeValue[pic] += node.p[plyr_not_i][pnic] *
-                                (player == plyr_i ?
-                                        node.showdownValue[pic][pnic] :
-                                        -node.showdownValue[pnic][pic]);
-                        opponentUnblockedSum += node.p[plyr_not_i][pnic];
-                        oppCount += 1;
-                    }
-                    opponentTotalSum += node.p[plyr_not_i][pnic];
-                }
-
-//                if (opponentUnblockedSum > 0) {
-//                    nodeValue[pic] *= opponentTotalSum / opponentUnblockedSum;
-//                }
-                if (oppCount > 0) {
-                    nodeValue[pic] /= oppCount;
-                }
-            }
-            return nodeValue;
+            return find_terminal_node_value(node, player, plyr_i, plyr_not_i);
         }
 
-        return vncfrGetValue(node, pi, pni, plyr_i);
-    }
-
-    private double[] vncfrGetValue(Node node, double[] pi, double[] pni, int plyr_i) {
         // LINE 20, 21
-        int player = node.player;
         double[] nodeValue = new double[NUM_CARDS];
         double[][] strategy = node.getStrategy();
 
@@ -148,21 +123,59 @@ public class Trainer {
 
         // LINE 34-42
         if (player == plyr_i) {
-            for (int c = 0; c < NUM_CARDS; c++) {
-                for (int a = 0; a < NUM_ACTIONS; a++) {
-                    if (node.validActions[a]) {
-                        double regret = 0;
-                        regret = node.values[a][c] - nodeValue[c];
-                        // According to paper, no weighing of regret here?
+            update_regret_and_strategy_sum(node, nodeValue, strategy, pi);
+        }
+        return nodeValue;
+    }
+
+    private double[] find_terminal_node_value(Node node, int player, int plyr_i, int plyr_not_i) {
+//        long nanoTime = System.nanoTime();
+        double[] nodeValue = new double[NUM_CARDS];
+        boolean player_is_plyr_i = player == plyr_i;
+        for (int pic = 0; pic < NUM_CARDS; pic++) {
+            double opponentUnblockedSum = 0;
+            double opponentTotalSum = 0;
+
+            int oppCount = 0;
+            for (int pnic = 0; pnic < NUM_CARDS; pnic++) {
+                if (!Util.checkCardBlock(RANGES[pic], RANGES[pnic])) {
+                    nodeValue[pic] += node.p[plyr_not_i][pnic] *
+                            (player_is_plyr_i ?
+                                    node.showdownValue[pic][pnic] :
+                                    -node.showdownValue[pnic][pic]);
+//                    opponentUnblockedSum += node.p[plyr_not_i][pnic];
+                    oppCount += 1;
+                }
+//                opponentTotalSum += node.p[plyr_not_i][pnic];
+            }
+//                if (opponentUnblockedSum > 0) {
+//                    nodeValue[pic] *= 1 / opponentUnblockedSum;
+//                }
+            if (oppCount > 0) {
+                nodeValue[pic] /= oppCount;
+//                    System.out.println(oppCount);
+            }
+//                System.out.println(opponentUnblockedSum / opponentTotalSum);
+//                System.out.println(oppCount);
+        }
+//        System.out.println(System.nanoTime() - nanoTime);
+        return nodeValue;
+    }
+
+    private void update_regret_and_strategy_sum(Node node, double[] nodeValue, double[][] strategy, double[] pi) {
+//        long nanoTime = System.nanoTime();
+        for (int c = 0; c < NUM_CARDS; c++) {
+            for (int a = 0; a < NUM_ACTIONS; a++) {
+                if (node.validActions[a]) {
+                    double regret = node.values[a][c] - nodeValue[c];
+                    // According to paper, no weighing of regret here?
 //                        node.regretSum[a][c] += regret;
-                        node.regretSum[a][c] = Math.max(node.regretSum[a][c] + regret, 0.0);
-                        node.strategySum[a][c] += pi[c] * strategy[a][c];
-                    }
+                    node.regretSum[a][c] = Math.max(node.regretSum[a][c] + regret, 0.0);
+                    node.strategySum[a][c] += pi[c] * strategy[a][c];
                 }
             }
         }
-
-        return nodeValue;
+//        System.out.println(System.nanoTime() - nanoTime);
     }
 
     private double[] exploit(Node node, double[] pi, double[] pni, int plyr_i) {
@@ -175,16 +188,16 @@ public class Trainer {
             double[] nodeValue = new double[NUM_CARDS];
             for (int bc = 0; bc < NUM_BOARD_CARDS; bc++) {
                 Node nextNode = node.childNodes[bc];
-                nodeValue = Util.arrayAdd(nodeValue, Util.arrayMultC(1 / NUM_BOARD_CARDS, exploit(nextNode, pi, pni, plyr_i)));
+                nodeValue = Util.arrayAdd(nodeValue, Util.arrayMultC(1.0 / NUM_BOARD_CARDS, exploit(nextNode, pi, pni, plyr_i)));
             }
             return nodeValue;
         } else if (node.is_terminal) {
             double[] nodeValue = new double[NUM_CARDS];
             for (int pic = 0; pic < NUM_CARDS; pic++) {
-
+                double opponentUnblockedSum = 0;
                 int oppCount = 0;
                 for (int pnic = 0; pnic < NUM_CARDS; pnic++) {
-                    if (pic != pnic) {
+                    if (!Util.checkCardBlock(RANGES[pic], RANGES[pnic])) {
                         nodeValue[pic] += node.p[plyr_not_i][pnic] *
                                 (player == plyr_i ?
                                         node.showdownValue[pic][pnic] :
@@ -192,7 +205,9 @@ public class Trainer {
                         oppCount += 1;
                     }
                 }
-
+//                if (opponentUnblockedSum > 0) {
+//                    nodeValue[pic] *= 1 / opponentUnblockedSum;
+//                }
                 if (oppCount > 0) {
                     nodeValue[pic] /= oppCount;
                 }
@@ -237,14 +252,14 @@ public class Trainer {
     }
 
     public static void main(String[] args) {
-        int iterations = 100000;
+        int iterations = 10000;
         Trainer trainer = new Trainer();
         trainer.train(iterations, iterations / 10);
 
-        for (Node n : trainer.nodeMap.values()) {
-            System.out.print(n.infoSet);
-            System.out.println(Arrays.deepToString(n.getActualStrategy()));
-        }
+//        for (Node n : trainer.nodeMap.values()) {
+//            System.out.print(n.infoSet);
+//            System.out.println(Arrays.deepToString(n.getActualStrategy()));
+//        }
     }
 
 }
