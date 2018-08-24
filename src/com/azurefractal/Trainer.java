@@ -133,13 +133,13 @@ public class Trainer {
         double[] nodeValue = new double[NUM_CARDS];
         boolean player_is_plyr_i = player == plyr_i;
         for (int pic = 0; pic < NUM_CARDS; pic++) {
-            double opponentUnblockedSum = 0;
-            double opponentTotalSum = 0;
-
+//            double opponentUnblockedSum = 0;
+//            double opponentTotalSum = 0;
+            double nodeValueTemp = 0;
             int oppCount = 0;
             for (int pnic = 0; pnic < NUM_CARDS; pnic++) {
                 if (!Util.checkCardBlock(RANGES[pic], RANGES[pnic])) {
-                    nodeValue[pic] += node.p[plyr_not_i][pnic] *
+                    nodeValueTemp += node.p[plyr_not_i][pnic] *
                             (player_is_plyr_i ?
                                     node.getShowdownValue(pic, pnic) :
                                     -node.getShowdownValue(pnic, pic));
@@ -149,11 +149,10 @@ public class Trainer {
 //                opponentTotalSum += node.p[plyr_not_i][pnic];
             }
 //                if (opponentUnblockedSum > 0) {
-//                    nodeValue[pic] *= 1 / opponentUnblockedSum;
+//                    nodeValue[pic] = nodeValueTemp / opponentUnblockedSum;
 //                }
             if (oppCount > 0) {
-                nodeValue[pic] /= oppCount;
-//                    System.out.println(oppCount);
+                nodeValue[pic] = nodeValueTemp / oppCount;
             }
 //                System.out.println(opponentUnblockedSum / opponentTotalSum);
 //                System.out.println(oppCount);
@@ -252,7 +251,7 @@ public class Trainer {
     }
 
     public static void main(String[] args) {
-        int iterations = 100;
+        int iterations = 1000;
         Trainer trainer = new Trainer();
         trainer.train(iterations, iterations / 10);
 
