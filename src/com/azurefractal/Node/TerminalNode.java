@@ -2,6 +2,7 @@ package com.azurefractal.Node;
 
 import com.azurefractal.HandEvaluator;
 import com.azurefractal.Trainer;
+import com.azurefractal.Util;
 
 import java.util.BitSet;
 
@@ -44,8 +45,8 @@ public class TerminalNode extends Node {
             int[] player_hole_cards = Trainer.RANGES[player_card];
             int[] opp_hole_cards = Trainer.RANGES[opp_card];
 
-            return HandEvaluator.evaluateHandToInt(Trainer.board[0], Trainer.board[1], Trainer.board[2], player_hole_cards[0], player_hole_cards[1])
-                    < HandEvaluator.evaluateHandToInt(Trainer.board[0], Trainer.board[1], Trainer.board[2], opp_hole_cards[0], opp_hole_cards[1]);
+            return HandEvaluator.evaluateManyCardHandsToInt(Util.arrayConcatenate(Trainer.board, player_hole_cards)) <
+                    HandEvaluator.evaluateManyCardHandsToInt(Util.arrayConcatenate(Trainer.board, opp_hole_cards));
         }
         System.out.println("ERROR: The following is not a terminal node");
         System.out.println(infoSet);

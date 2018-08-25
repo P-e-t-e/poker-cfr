@@ -9,8 +9,9 @@ import java.util.TreeMap;
 public class Trainer {
     public static final String[] ACTION_NAMES = {"p", "b", "c"};
     public static final int NUM_ACTIONS = 3;
-    public static final int[] board = {PokerCard.to_int("2s"), PokerCard.to_int("4h"), PokerCard.to_int("6s")};
-    public static final int[][] RANGES = Ranges.get_kuhn_range();//Ranges.get_n_card_deck_range(52, board);
+    public static final int[] board = {PokerCard.to_int("2s"), PokerCard.to_int("4h"),
+            PokerCard.to_int("6s"), PokerCard.to_int("8h")};
+    public static final int[][] RANGES = Ranges.get_kuhn_range();//Ranges.get_n_card_deck_range(52, board);//
     public static final int NUM_CARDS = RANGES.length;
     public static final boolean[][] VALID_RANGE_PAIRS = Util.InitializeValidRangePairs(RANGES);
     public static final int NUM_BOARD_CARDS = 1;
@@ -251,7 +252,7 @@ public class Trainer {
     }
 
     public static void main(String[] args) {
-        int iterations = 100;
+        int iterations = 1000;
         Trainer trainer = new Trainer();
         trainer.train(iterations, iterations / 10);
 

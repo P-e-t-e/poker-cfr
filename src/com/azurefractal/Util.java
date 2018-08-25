@@ -41,6 +41,17 @@ public class Util {
         return result;
     }
 
+    public static int[] arrayConcatenate(int[] vector1, int[] vector2) {
+        int[] result = new int[vector1.length + vector2.length];
+        for (int i = 0; i < vector1.length; i++) {
+            result[i] = vector1[i];
+        }
+        for (int i = vector1.length; i < result.length; i++) {
+            result[i] = vector2[i - vector1.length];
+        }
+        return result;
+    }
+
     public static double arraySum(double[] vector) {
         double result = 0;
         for (int i = 0; i < vector.length; i++) {
