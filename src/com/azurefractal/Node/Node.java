@@ -105,4 +105,8 @@ public class Node {
     public double getShowdownValue(int player_card, int opp_card) {
         return (showdownLost.get(player_card * Trainer.NUM_CARDS + opp_card) ? -winSize : winSize);
     }
+
+    public boolean getShowdownWinner(int player_card, int opp_card) {
+        return !showdownLost.get(player_card * Trainer.NUM_CARDS + opp_card);
+    }
 }
