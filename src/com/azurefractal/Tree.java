@@ -1,6 +1,8 @@
 package com.azurefractal;
 
 import com.azurefractal.Node.*;
+
+import java.util.List;
 import java.util.TreeMap;
 
 public class Tree {
@@ -13,49 +15,52 @@ public class Tree {
         rules.put("pot_size", "40");
         rules.put("relative_bet_size", "1.0");
 
-        buildTreeFrom(rootNode, nodeMap, rules, 0, Trainer.BETS_LEFT);
+        int[] newBoardCards = new int[0];
+        buildTreeFrom(rootNode, nodeMap, rules, 0, Trainer.BETS_LEFT, newBoardCards);
         System.out.print("Tree created with number of infosets:");
         System.out.println(nodeMap.size());
     }
 
-    public static void buildTreeFrom(Node node, TreeMap nodeMap, TreeMap<String, String> rules, int street_number, int bets_left) {
+    public static void buildTreeFrom(Node node, TreeMap nodeMap, TreeMap<String, String> rules,
+                                     int streetNumber, int bets_left, int[] newBoardCards) {
         for (int a = 0; a < Trainer.NUM_ACTIONS; a++) {
             if (node.validActions[a]) {
                 String infoSet = node.infoSet;
                 int lenInfoSet = infoSet.length();
                 String endingString1 = (lenInfoSet > 1) ? infoSet.substring(lenInfoSet - 1, lenInfoSet) : "";
                 String endingString2 = (lenInfoSet > 1) ? infoSet.substring(lenInfoSet - 2, lenInfoSet) : "";
-                int new_bets_left = (a == 1) ? bets_left - 1 : bets_left;
+                int newBetsLeft = (a == 1) ? bets_left - 1 : bets_left;
 
                 if (endingString1.equals("c") || endingString2.equals("pp")) {
-                    street_number += 1;
-                    if (street_number < Integer.parseInt(rules.get("n_streets"))) {
+                    streetNumber += 1;
+                    if (streetNumber < Integer.parseInt(rules.get("n_streets"))) {
                         for (int bc = 0; bc < Trainer.NUM_BOARD_CARDS; bc++) {
                             String newInfoSet = infoSet + "." + Integer.toString(bc) + ".";
                             if (newInfoSet.length() % 2 == 1) {
                                 newInfoSet += ".";
                             }
-                            Node newNode = addNewNode(newInfoSet, node, nodeMap, new_bets_left > 0);
+                            Node newNode = addNewNode(newInfoSet, node, nodeMap, newBetsLeft > 0);
                             node.childNodes[bc] = newNode;
-                            buildTreeFrom(newNode, nodeMap, rules, street_number, new_bets_left);
+                            buildTreeFrom(newNode, nodeMap, rules,
+                                    streetNumber, newBetsLeft, Util.arrayAppend(newBoardCards, bc));
                         }
                     }
                 } else if (!node.is_terminal) {
                     // Non terminal Node
                     String newInfoSet = infoSet + Trainer.ACTION_NAMES[a];
-                    boolean isBoardNodeNext = checkIfBoardNodeNext(newInfoSet, street_number, rules);
-                    boolean isTerminalNodeNext = checkIfTerminalNodeNext(newInfoSet, street_number, rules);
+                    boolean isBoardNodeNext = checkIfBoardNodeNext(newInfoSet, streetNumber, rules);
+                    boolean isTerminalNodeNext = checkIfTerminalNodeNext(newInfoSet, streetNumber, rules);
                     Node newNode;
                     if (isBoardNodeNext) {
-                        newNode = addNewBoardNode(newInfoSet, node, nodeMap, new_bets_left > 0);
+                        newNode = addNewBoardNode(newInfoSet, node, nodeMap, newBetsLeft > 0);
                     } else if (isTerminalNodeNext) {
 //                        System.out.println(newInfoSet);
-                        newNode = addNewTerminalNode(newInfoSet, node, nodeMap, street_number, new_bets_left > 0);
+                        newNode = addNewTerminalNode(newInfoSet, node, nodeMap, newBoardCards);
                     } else {
-                        newNode = addNewNode(newInfoSet, node, nodeMap, new_bets_left > 0);
+                        newNode = addNewNode(newInfoSet, node, nodeMap, newBetsLeft > 0);
                     }
                     node.childNodes[a] = newNode;
-                    buildTreeFrom(newNode, nodeMap, rules, street_number, new_bets_left);
+                    buildTreeFrom(newNode, nodeMap, rules, streetNumber, newBetsLeft, newBoardCards);
                 }
             }
         }
@@ -77,9 +82,9 @@ public class Tree {
         return node;
     }
 
-    public static Node addNewTerminalNode(String infoSet, Node parent_node, TreeMap nodeMap, int street_number, boolean can_bet) {
+    public static Node addNewTerminalNode(String infoSet, Node parent_node, TreeMap nodeMap, int[] newBoardCards) {
         boolean[] validActions = {false, false, false};
-        Node node = new TerminalNode(validActions, infoSet);
+        Node node = new TerminalNode(validActions, infoSet, newBoardCards);
         node.parent_node = parent_node;
         nodeMap.put(infoSet, node);
         return node;

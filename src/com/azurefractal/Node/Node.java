@@ -14,6 +14,8 @@ public class Node {
     public int player;
     public double winSize;
     public BitSet showdownLost;
+    public int[] newBoardCards;
+    public BitSet validRanges;
     public double[][] regretSum = new double[Trainer.NUM_ACTIONS][Trainer.NUM_CARDS],
             strategy = new double[Trainer.NUM_ACTIONS][Trainer.NUM_CARDS],
             strategySum = new double[Trainer.NUM_ACTIONS][Trainer.NUM_CARDS],

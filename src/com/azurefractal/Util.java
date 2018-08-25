@@ -1,5 +1,7 @@
 package com.azurefractal;
 
+import java.util.Arrays;
+
 public class Util {
     public static double[] arrayAdd(double[] vector1, double[] vector2) {
         double[] result = new double[vector2.length];
@@ -41,6 +43,17 @@ public class Util {
         return result;
     }
 
+    public static int[] arrayAppend(int[] vector1, int scalar) {
+        int[] result = new int[vector1.length + 1];
+        for (int i = 0; i < vector1.length; i++) {
+            result[i] = vector1[i];
+        }
+        for (int i = vector1.length; i < result.length; i++) {
+            result[i] = scalar;
+        }
+        return result;
+    }
+
     public static int[] arrayConcatenate(int[] vector1, int[] vector2) {
         int[] result = new int[vector1.length + vector2.length];
         for (int i = 0; i < vector1.length; i++) {
@@ -60,12 +73,12 @@ public class Util {
         return result;
     }
 
-    public static boolean checkCardNotBlocked(int[] player_cards, int[] opp_cards) {
-        for (int pc = 0; pc < 2; pc++) {
-            for (int oc = 0; oc < 2; oc++) {
-                if (player_cards[pc] == opp_cards[oc]) {
-//                    System.out.print(Arrays.toString(player_cards));
-//                    System.out.println(Arrays.toString(opp_cards));
+    public static boolean checkCardNotBlocked(int[] cards0, int[] cards1) {
+        for (int pc = 0; pc < cards0.length; pc++) {
+            for (int oc = 0; oc < cards1.length; oc++) {
+                if (cards0[pc] == cards1[oc]) {
+//                    System.out.print(Arrays.toString(cards0));
+//                    System.out.println(Arrays.toString(cards1));
                     return false;
                 }
             }
