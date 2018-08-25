@@ -10,8 +10,9 @@ public class Trainer {
     public static final String[] ACTION_NAMES = {"p", "b", "c"};
     public static final int NUM_ACTIONS = 3;
     public static final int[] board = {PokerCard.to_int("2s"), PokerCard.to_int("4h"), PokerCard.to_int("6s")};
-    public static final int[][] RANGES = Ranges.get_n_card_deck_range(52, board);
+    public static final int[][] RANGES = Ranges.get_kuhn_range();//Ranges.get_n_card_deck_range(52, board);
     public static final int NUM_CARDS = RANGES.length;
+    public static final boolean[][] VALID_RANGE_PAIRS = Util.InitializeValidRangePairs(RANGES);
     public static final int NUM_BOARD_CARDS = 1;
     public static final double RELATIVE_BET_SIZE = 0.5;
     public static final int BETS_LEFT = 3;
@@ -131,14 +132,16 @@ public class Trainer {
         boolean player_is_plyr_i = player == plyr_i;
         double[] p_not_i = node.p[plyr_not_i];
         double winSize = node.winSize;
+        double nodeValueTemp;
+        int oppCount;
 
         for (int pic = 0; pic < NUM_CARDS; pic++) {
 //            double opponentUnblockedSum = 0;
 //            double opponentTotalSum = 0;
-            double nodeValueTemp = 0;
-            int oppCount = 0;
+            nodeValueTemp = 0;
+            oppCount = 0;
             for (int pnic = 0; pnic < NUM_CARDS; pnic++) {
-                if (!Util.checkCardBlock(RANGES[pic], RANGES[pnic])) {
+                if (VALID_RANGE_PAIRS[pic][pnic]) {
                     nodeValueTemp += (player_is_plyr_i ?
                             (node.getShowdownWinner(pic, pnic) ? p_not_i[pnic] : -p_not_i[pnic]) :
                             (node.getShowdownWinner(pnic, pic) ? -p_not_i[pnic] : p_not_i[pnic]));
@@ -193,7 +196,7 @@ public class Trainer {
                 double opponentUnblockedSum = 0;
                 int oppCount = 0;
                 for (int pnic = 0; pnic < NUM_CARDS; pnic++) {
-                    if (!Util.checkCardBlock(RANGES[pic], RANGES[pnic])) {
+                    if (VALID_RANGE_PAIRS[pic][pnic]) {
                         nodeValue[pic] += node.p[plyr_not_i][pnic] *
                                 (player == plyr_i ?
                                         node.getShowdownValue(pic, pnic) :

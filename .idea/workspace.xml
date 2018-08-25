@@ -4,14 +4,10 @@
     <bookmark url="file://$PROJECT_DIR$/src/com/azurefractal/Trainer.java" line="254" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2351c424-00ab-4de9-a9b8-7b92b4437fe8" name="Default Changelist" comment="Added TerminalNode class to save memory. Moved Node classes to a separate package.">
+    <list default="true" id="2351c424-00ab-4de9-a9b8-7b92b4437fe8" name="Default Changelist" comment="Further minor optimization to calculation of terminal node value.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/poker-cfr/com/azurefractal/Trainer.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/poker-cfr/com/azurefractal/Trainer.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/azurefractal/Node/Node.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/azurefractal/Node/Node.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/azurefractal/Node/TerminalNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/azurefractal/Node/TerminalNode.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/azurefractal/Ranges.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/azurefractal/Ranges.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/com/azurefractal/Trainer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/azurefractal/Trainer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/azurefractal/Tree.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/azurefractal/Tree.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/com/azurefractal/Util.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/azurefractal/Util.java" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -46,24 +42,24 @@
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
         <counts>
-          <entry key="java" value="90" />
+          <entry key="java" value="93" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.open">
         <counts>
-          <entry key="JAVA" value="90" />
+          <entry key="JAVA" value="93" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="java" value="20413" />
-          <entry key="txt" value="1080" />
+          <entry key="java" value="21084" />
+          <entry key="txt" value="1273" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="JAVA" value="20413" />
-          <entry key="PLAIN_TEXT" value="1080" />
+          <entry key="JAVA" value="21084" />
+          <entry key="PLAIN_TEXT" value="1273" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.vcs.git.usages">
@@ -79,8 +75,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/com/azurefractal/Trainer.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="361">
-              <caret line="154" column="25" selection-start-line="154" selection-start-column="16" selection-end-line="154" selection-end-column="25" />
+            <state relative-caret-position="157">
+              <caret line="143" column="16" selection-start-line="143" selection-start-column="16" selection-end-line="143" selection-end-column="16" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -89,19 +85,10 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/com/azurefractal/Suit.java">
+        <entry file="file://$PROJECT_DIR$/src/com/azurefractal/PokerCard.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="495">
-              <caret line="37" column="41" selection-start-line="37" selection-start-column="41" selection-end-line="37" selection-end-column="41" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/com/azurefractal/Primes.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="30">
-              <caret line="2" selection-start-line="2" selection-end-line="17" selection-end-column="1" />
+            <state relative-caret-position="454">
+              <caret line="92" selection-start-line="92" selection-end-line="92" />
             </state>
           </provider>
         </entry>
@@ -109,8 +96,26 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/com/azurefractal/Util.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="431">
-              <caret line="48" column="31" selection-start-line="48" selection-start-column="31" selection-end-line="48" selection-end-column="31" />
+            <state relative-caret-position="268">
+              <caret line="67" column="26" selection-start-line="67" selection-start-column="26" selection-end-line="67" selection-end-column="26" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/com/azurefractal/Main.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="30">
+              <caret line="2" column="13" selection-start-line="2" selection-start-column="13" selection-end-line="2" selection-end-column="13" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/com/azurefractal/Rank.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="75">
+              <caret line="5" column="13" selection-start-line="5" selection-start-column="13" selection-end-line="5" selection-end-column="13" />
             </state>
           </provider>
         </entry>
@@ -120,15 +125,6 @@
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="266">
               <caret line="111" lean-forward="true" selection-start-line="111" selection-end-line="111" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/com/azurefractal/Unique5.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="30">
-              <caret line="2" column="13" selection-start-line="2" selection-start-column="13" selection-end-line="2" selection-end-column="13" />
             </state>
           </provider>
         </entry>
@@ -148,8 +144,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/com/azurefractal/Node/Node.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="296">
-              <caret line="102" lean-forward="true" selection-start-line="102" selection-end-line="102" />
+            <state relative-caret-position="300">
+              <caret line="110" column="5" lean-forward="true" selection-start-line="110" selection-start-column="5" selection-end-line="110" selection-end-column="5" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -189,7 +185,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>pni</find>
       <find>getStr</find>
       <find>get</find>
       <find>print</find>
@@ -219,6 +214,7 @@
       <find>System.out</find>
       <find>float[]</find>
       <find>Syste</find>
+      <find>find_terminal_node</find>
     </findStrings>
     <replaceStrings>
       <replace>victim</replace>
@@ -253,14 +249,14 @@
         <option value="$PROJECT_DIR$/src/com/azurefractal/HandEvaluator.java" />
         <option value="$PROJECT_DIR$/src/com/azurefractal/Main.java" />
         <option value="$PROJECT_DIR$/src/com/azurefractal/BoardcardNode.java" />
-        <option value="$PROJECT_DIR$/src/com/azurefractal/Util.java" />
         <option value="$PROJECT_DIR$/src/com/azurefractal/Node.java" />
         <option value="$PROJECT_DIR$/src/com/azurefractal/BoardNode.java" />
         <option value="$PROJECT_DIR$/src/com/azurefractal/Node/BoardNode.java" />
         <option value="$PROJECT_DIR$/src/com/azurefractal/Node/TerminalNode.java" />
-        <option value="$PROJECT_DIR$/src/com/azurefractal/Node/Node.java" />
         <option value="$PROJECT_DIR$/src/com/azurefractal/Tree.java" />
         <option value="$PROJECT_DIR$/src/com/azurefractal/Ranges.java" />
+        <option value="$PROJECT_DIR$/src/com/azurefractal/Node/Node.java" />
+        <option value="$PROJECT_DIR$/src/com/azurefractal/Util.java" />
         <option value="$PROJECT_DIR$/src/com/azurefractal/Trainer.java" />
       </list>
     </option>
@@ -271,7 +267,7 @@
       <select />
     </treeState>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
+  <component name="ProjectFrameBounds">
     <option name="x" value="630" />
     <option name="width" value="1295" />
     <option name="height" value="1040" />
@@ -321,7 +317,7 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1535153472802" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1535159492542" />
     <property name="settings.editor.selected.configurable" value="VisualVMLauncher" />
   </component>
   <component name="RecentsManager">
@@ -502,7 +498,28 @@
       <option name="project" value="LOCAL" />
       <updated>1535131379155</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="TerminalNode now uses a BitSet to store showdown results in order to save memory.">
+      <created>1535153523894</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1535153523894</updated>
+    </task>
+    <task id="LOCAL-00017" summary="Minor optimization to calculation of terminal node value.">
+      <created>1535154279874</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1535154279874</updated>
+    </task>
+    <task id="LOCAL-00018" summary="Further minor optimization to calculation of terminal node value.">
+      <created>1535157551788</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1535157551788</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
     <servers />
   </component>
   <component name="TodoView">
@@ -515,10 +532,10 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
+    <frame x="504" y="0" width="1036" height="832" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.26174498" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.39959016" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Image Layers" order="2" />
       <window_info id="Designer" order="3" />
@@ -527,7 +544,7 @@
       <window_info id="Favorites" order="6" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32907802" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.27801418" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.36051503" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.30212766" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -596,7 +613,10 @@
     <MESSAGE value="Implemented multiple bets/raises. Removed redundant &quot;history&quot; argument from cfr and exploit." />
     <MESSAGE value="Added card blocking checks for player hands. Fixed bug with NUM_BOARD_CARDS &gt; 1." />
     <MESSAGE value="Added TerminalNode class to save memory. Moved Node classes to a separate package." />
-    <option name="LAST_COMMIT_MESSAGE" value="Added TerminalNode class to save memory. Moved Node classes to a separate package." />
+    <MESSAGE value="TerminalNode now uses a BitSet to store showdown results in order to save memory." />
+    <MESSAGE value="Minor optimization to calculation of terminal node value." />
+    <MESSAGE value="Further minor optimization to calculation of terminal node value." />
+    <option name="LAST_COMMIT_MESSAGE" value="Further minor optimization to calculation of terminal node value." />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">
@@ -657,27 +677,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/azurefractal/Main.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="30">
-          <caret line="2" column="13" selection-start-line="2" selection-start-column="13" selection-end-line="2" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/azurefractal/Rank.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="75">
-          <caret line="5" column="13" selection-start-line="5" selection-start-column="13" selection-end-line="5" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/azurefractal/PokerCard.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1260">
-          <caret line="92" selection-start-line="92" selection-end-line="92" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/com/azurefractal/Suit.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="495">
@@ -692,44 +691,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/azurefractal/Node/BoardNode.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
-          <caret line="6" column="35" selection-start-line="6" selection-start-column="35" selection-end-line="6" selection-end-column="35" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/com/azurefractal/Unique5.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="30">
           <caret line="2" column="13" selection-start-line="2" selection-start-column="13" selection-end-line="2" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/azurefractal/Util.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="431">
-          <caret line="48" column="31" selection-start-line="48" selection-start-column="31" selection-end-line="48" selection-end-column="31" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/azurefractal/Node/TerminalNode.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="570">
-          <caret line="38" column="9" lean-forward="true" selection-start-line="38" selection-start-column="9" selection-end-line="38" selection-end-column="9" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/azurefractal/Node/Node.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="296">
-          <caret line="102" lean-forward="true" selection-start-line="102" selection-end-line="102" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -750,10 +715,65 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/azurefractal/Main.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="30">
+          <caret line="2" column="13" selection-start-line="2" selection-start-column="13" selection-end-line="2" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/azurefractal/Rank.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="75">
+          <caret line="5" column="13" selection-start-line="5" selection-start-column="13" selection-end-line="5" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/azurefractal/Node/BoardNode.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="90">
+          <caret line="6" column="35" selection-start-line="6" selection-start-column="35" selection-end-line="6" selection-end-column="35" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/azurefractal/PokerCard.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="454">
+          <caret line="92" selection-start-line="92" selection-end-line="92" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/azurefractal/Node/TerminalNode.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="570">
+          <caret line="38" column="9" lean-forward="true" selection-start-line="38" selection-start-column="9" selection-end-line="38" selection-end-column="9" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/azurefractal/Node/Node.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="300">
+          <caret line="110" column="5" lean-forward="true" selection-start-line="110" selection-start-column="5" selection-end-line="110" selection-end-column="5" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/azurefractal/Util.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="268">
+          <caret line="67" column="26" selection-start-line="67" selection-start-column="26" selection-end-line="67" selection-end-column="26" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/com/azurefractal/Trainer.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="361">
-          <caret line="154" column="25" selection-start-line="154" selection-start-column="16" selection-end-line="154" selection-end-column="25" />
+        <state relative-caret-position="157">
+          <caret line="143" column="16" selection-start-line="143" selection-start-column="16" selection-end-line="143" selection-end-column="16" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>

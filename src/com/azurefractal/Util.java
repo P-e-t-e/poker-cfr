@@ -1,7 +1,5 @@
 package com.azurefractal;
 
-import java.util.Arrays;
-
 public class Util {
     public static double[] arrayAdd(double[] vector1, double[] vector2) {
         double[] result = new double[vector2.length];
@@ -51,17 +49,27 @@ public class Util {
         return result;
     }
 
-    public static boolean checkCardBlock(int[] player_cards, int[] opp_cards) {
+    public static boolean checkCardNotBlocked(int[] player_cards, int[] opp_cards) {
         for (int pc = 0; pc < 2; pc++) {
             for (int oc = 0; oc < 2; oc++) {
                 if (player_cards[pc] == opp_cards[oc]) {
 //                    System.out.print(Arrays.toString(player_cards));
 //                    System.out.println(Arrays.toString(opp_cards));
-                    return true;
+                    return false;
                 }
             }
         }
-        return false;
+        return true;
+    }
+
+    public static boolean[][] InitializeValidRangePairs(int[][] ranges) {
+        boolean[][] result = new boolean[Trainer.NUM_CARDS][Trainer.NUM_CARDS];
+        for (int pc = 0; pc < Trainer.NUM_CARDS; pc++) {
+            for (int oc = 0; oc < Trainer.NUM_CARDS; oc++) {
+                result[pc][oc] = checkCardNotBlocked(ranges[pc], ranges[oc]);
+            }
+        }
+        return result;
     }
 
     public long intentional_slow_step() {
