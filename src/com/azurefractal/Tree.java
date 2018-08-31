@@ -10,7 +10,7 @@ public class Tree {
     public static void buildTree(Node rootNode, TreeMap nodeMap) {
         nodeMap.put("", rootNode);
         TreeMap<String, String> rules = new TreeMap<>();
-        rules.put("n_streets", "2");
+        rules.put("n_streets", Integer.toString(Trainer.NUM_STREETS));
         rules.put("eff_stack", "500");
         rules.put("pot_size", "40");
         rules.put("relative_bet_size", "1.0");
@@ -41,8 +41,9 @@ public class Tree {
                             }
                             Node newNode = addNewNode(newInfoSet, node, nodeMap, newBetsLeft > 0);
                             node.childNodes[bc] = newNode;
+                            int newCard = Trainer.DECK[bc];
                             buildTreeFrom(newNode, nodeMap, rules,
-                                    streetNumber, newBetsLeft, Util.arrayAppend(newBoardCards, bc));
+                                    streetNumber, newBetsLeft, Util.arrayAppend(newBoardCards, newCard));
                         }
                     }
                 } else if (!node.is_terminal) {

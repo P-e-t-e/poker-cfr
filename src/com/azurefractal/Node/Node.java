@@ -18,9 +18,9 @@ public class Node {
     public BitSet validRanges;
     public double[][] regretSum = new double[Trainer.NUM_ACTIONS][Trainer.NUM_CARDS],
             strategy = new double[Trainer.NUM_ACTIONS][Trainer.NUM_CARDS],
-            strategySum = new double[Trainer.NUM_ACTIONS][Trainer.NUM_CARDS],
-            values = new double[Trainer.NUM_ACTIONS][Trainer.NUM_CARDS],
-            p = new double[2][Trainer.NUM_CARDS];
+            strategySum = new double[Trainer.NUM_ACTIONS][Trainer.NUM_CARDS];
+    public double[][] values;
+    public double[][] p = new double[2][Trainer.NUM_CARDS];
     public Node parent_node;
     public Node[] childNodes;
     public boolean is_terminal = false;
@@ -29,6 +29,7 @@ public class Node {
         this.validActions = validActions;
         this.infoSet = infoSet;
         childNodes = new Node[Trainer.NUM_ACTIONS];
+        values = new double[Trainer.NUM_ACTIONS][Trainer.NUM_CARDS];
         for (int a = 0; a < Trainer.NUM_ACTIONS; a++) {
             if (this.validActions[a]) {
                 this.numValidActions += 1;

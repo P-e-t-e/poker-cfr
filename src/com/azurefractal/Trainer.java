@@ -7,16 +7,26 @@ import java.util.Random;
 import java.util.TreeMap;
 
 public class Trainer {
-    public static final String[] ACTION_NAMES = {"p", "b", "c"};
-    public static final int NUM_ACTIONS = 3;
+    // Board that is out there before the first street
     public static final int[] board = {PokerCard.to_int("2s"), PokerCard.to_int("4h"),
             PokerCard.to_int("6s"), PokerCard.to_int("8h")};
-    public static final int[][] RANGES = Ranges.get_kuhn_range();//Ranges.get_n_card_deck_range(52, board);//
+    // Array of possible two card holdings that either player could have
+    public static final int[][] RANGES = Ranges.get_n_card_deck_range(48, board);//Ranges.get_kuhn_range();//
     public static final int NUM_CARDS = RANGES.length;
+    // A 2D array of booleans that is true when the player cards do not block each other
     public static final boolean[][] VALID_RANGE_PAIRS = Util.InitializeValidRangePairs(RANGES);
-    public static final int NUM_BOARD_CARDS = 1;
+    public static final int[] DECK = Util.generateRemainingDeck(board);
+    // Number of possible board cards that could be dealt
+    public static final int NUM_BOARD_CARDS = 48;
+    // Number of streets. The number of board cards dealt is NUM_STREETS - 1
+    public static final int NUM_STREETS = 2;
+    // Bet size in terms of number of pot
     public static final double RELATIVE_BET_SIZE = 0.5;
+    // Maximum number of pot sized bets that can be placed.
     public static final int BETS_LEFT = 3;
+
+    public static final String[] ACTION_NAMES = {"p", "b", "c"};
+    public static final int NUM_ACTIONS = 3;
     public static final Random random = new Random(0);
     public TreeMap<String, Node> nodeMap = new TreeMap<>();
     public Node rootNode = new Node(new boolean[]{true, true, false}, "");
@@ -94,7 +104,8 @@ public class Trainer {
         if (node instanceof BoardNode) {
             int bc = random.nextInt(NUM_BOARD_CARDS);
             Node nextNode = node.childNodes[bc];
-            return cfr(nextNode, pi, pni, plyr_i);
+            node.values[bc] = cfr(nextNode, pi, pni, plyr_i);
+            return node.values[bc];
         } else if (node instanceof TerminalNode) {
             return find_terminal_node_value(node, player, plyr_i, plyr_not_i);
         }
@@ -256,10 +267,12 @@ public class Trainer {
         Trainer trainer = new Trainer();
         trainer.train(iterations, iterations / 10);
 
-//        for (Node n : trainer.nodeMap.values()) {
-//            System.out.print(n.infoSet);
-//            System.out.println(Arrays.deepToString(n.getActualStrategy()));
-//        }
+        for (Node n : trainer.nodeMap.values()) {
+            if (n instanceof BoardNode) {
+                System.out.print(n.infoSet);
+                System.out.println(Arrays.deepToString(n.values));
+            }
+        }
     }
 
 }

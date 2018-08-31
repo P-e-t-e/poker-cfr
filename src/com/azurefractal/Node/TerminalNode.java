@@ -59,8 +59,7 @@ public class TerminalNode extends Node {
     private void calculateValidRanges() {
         for (int pc = 0; pc < Trainer.NUM_CARDS; pc++) {
             for (int oc = 0; oc < Trainer.NUM_CARDS; oc++) {
-                if (Util.checkCardNotBlocked(Trainer.RANGES[pc], newBoardCards) &&
-                        Util.checkCardNotBlocked(Trainer.RANGES[oc], newBoardCards)) {
+                if (Util.checkCardNotBlocked(Trainer.RANGES[pc], Trainer.RANGES[oc], newBoardCards)) {
                     validRanges.set(pc * Trainer.NUM_CARDS + oc, true);
                 }
             }
