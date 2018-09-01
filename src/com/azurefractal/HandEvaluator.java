@@ -1,11 +1,7 @@
 package com.azurefractal;
 
 /**
- * Given five PokerCards calculates the value of the hand.
- * <p>
- * Java port of the Cactus Kev hand evaluator
- * (http://www.suffecool.net/poker/evaluator.html) with the perfect hash
- * fast_eval lookups. (http://www.paulsenzee.com/2006/06/some-perfect-hash.html)
+ Algorithm by http://suffe.cool/poker/evaluator.html
  */
 public class HandEvaluator {
     private static HandRank handRank(int val) {
