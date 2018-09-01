@@ -1,4 +1,4 @@
-package com.azurefractal;
+package com.azurefractal.Evaluator;
 
 import static sun.misc.Version.print;
 

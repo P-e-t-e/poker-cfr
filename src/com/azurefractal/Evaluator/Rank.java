@@ -1,4 +1,4 @@
-package com.azurefractal;
+package com.azurefractal.Evaluator;
 
 /**
  * Convenience class to hold ranks and convert easily.

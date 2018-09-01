@@ -1,4 +1,4 @@
-package com.azurefractal;
+package com.azurefractal.Evaluator;
 
 public class Primes {
 	private static int[] values_;

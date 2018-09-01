@@ -1,4 +1,4 @@
-package com.azurefractal;
+package com.azurefractal.Evaluator;
 
 /**
  * Keeps track of suits as needed by the rest of the algorithm.

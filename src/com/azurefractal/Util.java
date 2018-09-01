@@ -1,5 +1,7 @@
 package com.azurefractal;
 
+import com.azurefractal.Evaluator.PokerCard;
+
 import java.util.Arrays;
 
 public class Util {

@@ -1,4 +1,4 @@
-package com.azurefractal;
+package com.azurefractal.Evaluator;
 
 /**
  * Easy handle for the ranking of the cards.

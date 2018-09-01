@@ -1,5 +1,6 @@
 package com.azurefractal;
 
+import com.azurefractal.Evaluator.PokerCard;
 import com.azurefractal.Node.*;
 
 import java.util.Arrays;

@@ -1,5 +1,9 @@
 package com.azurefractal;
 
+import com.azurefractal.Evaluator.PokerCard;
+import com.azurefractal.Evaluator.Rank;
+import com.azurefractal.Evaluator.Suit;
+
 public class Ranges {
 
     public static int[][] get_canonical_range() {

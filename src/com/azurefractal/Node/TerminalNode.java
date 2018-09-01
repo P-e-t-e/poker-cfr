@@ -1,6 +1,6 @@
 package com.azurefractal.Node;
 
-import com.azurefractal.HandEvaluator;
+import com.azurefractal.Evaluator.HandEvaluator;
 import com.azurefractal.Trainer;
 import com.azurefractal.Util;
 

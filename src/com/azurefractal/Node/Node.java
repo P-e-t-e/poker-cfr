@@ -1,6 +1,5 @@
 package com.azurefractal.Node;
 
-import com.azurefractal.HandEvaluator;
 import com.azurefractal.Trainer;
 
 import java.util.Arrays;

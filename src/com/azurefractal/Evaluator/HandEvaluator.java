@@ -1,4 +1,4 @@
-package com.azurefractal;
+package com.azurefractal.Evaluator;
 
 /**
  Algorithm by http://suffe.cool/poker/evaluator.html
