@@ -10,16 +10,23 @@ public class TerminalNode extends Node {
     private boolean terminalPassPass;
     private boolean terminalCall;
     private boolean terminalFold;
+    private double relativeBetSize;
+    private int[][] ranges;
+    private int[] board;
 
-    public TerminalNode(boolean[] validActions, String infoSet, int[] newBoardCards) {
-        super(validActions, infoSet);
+    public TerminalNode(boolean[] validActions, String infoSet, Trainer trainer, int[] newBoardCards) {
+        super(validActions, infoSet, trainer);
+        relativeBetSize = trainer.RELATIVE_BET_SIZE;
+        ranges = trainer.RANGES;
+        board = trainer.board;
+
         int n_calls = 0;
         char delimiter = 'c';
         for (int i = 0; i < infoSet.length(); n_calls += (infoSet.charAt(i++) == delimiter ? 1 : 0)) ;
         // winSize is half of the pot.
-        winSize = (float) Math.pow(1.0 + 2.0 * Trainer.RELATIVE_BET_SIZE, n_calls);
-        showdownLost = new BitSet(Trainer.NUM_CARDS * Trainer.NUM_CARDS);
-        validRanges = new BitSet(Trainer.NUM_CARDS * Trainer.NUM_CARDS);
+        winSize = (float) Math.pow(1.0 + 2.0 * relativeBetSize, n_calls);
+        showdownLost = new BitSet(numCards * numCards);
+        validRanges = new BitSet(numCards * numCards);
         int plays = infoSet.length();
         String endingString = infoSet.substring(plays - 2, plays);
         terminalPassPass = endingString.equals("pp");
@@ -33,10 +40,10 @@ public class TerminalNode extends Node {
 
     private void calculateShowdownWinner() {
         if (!terminalFold) {
-            for (int pc = 0; pc < Trainer.NUM_CARDS; pc++) {
-                for (int oc = 0; oc < Trainer.NUM_CARDS; oc++) {
+            for (int pc = 0; pc < numCards; pc++) {
+                for (int oc = 0; oc < numCards; oc++) {
                     if (pc != oc) {
-                        showdownLost.set(pc * Trainer.NUM_CARDS + oc, !determineShowdownWinner(pc, oc));
+                        showdownLost.set(pc * numCards + oc, !determineShowdownWinner(pc, oc));
                     }
                 }
             }
@@ -45,11 +52,11 @@ public class TerminalNode extends Node {
 
     private boolean determineShowdownWinner(int player_card, int opp_card) {
         if (terminalPassPass || terminalCall) {
-            int[] player_hole_cards = Trainer.RANGES[player_card];
-            int[] opp_hole_cards = Trainer.RANGES[opp_card];
+            int[] player_hole_cards = ranges[player_card];
+            int[] opp_hole_cards = ranges[opp_card];
 
-            return HandEvaluator.evaluateManyCardHandsToInt(Util.arrayConcatenate(Trainer.board, player_hole_cards)) <
-                    HandEvaluator.evaluateManyCardHandsToInt(Util.arrayConcatenate(Trainer.board, opp_hole_cards));
+            return HandEvaluator.evaluateManyCardHandsToInt(Util.arrayConcatenate(board, player_hole_cards)) <
+                    HandEvaluator.evaluateManyCardHandsToInt(Util.arrayConcatenate(board, opp_hole_cards));
         }
         System.out.println("ERROR: The following is not a terminal node");
         System.out.println(infoSet);
@@ -57,10 +64,10 @@ public class TerminalNode extends Node {
     }
 
     private void calculateValidRanges() {
-        for (int pc = 0; pc < Trainer.NUM_CARDS; pc++) {
-            for (int oc = 0; oc < Trainer.NUM_CARDS; oc++) {
-                if (Util.checkCardNotBlocked(Trainer.RANGES[pc], Trainer.RANGES[oc], newBoardCards)) {
-                    validRanges.set(pc * Trainer.NUM_CARDS + oc, true);
+        for (int pc = 0; pc < numCards; pc++) {
+            for (int oc = 0; oc < numCards; oc++) {
+                if (Util.checkCardNotBlocked(ranges[pc], ranges[oc], newBoardCards)) {
+                    validRanges.set(pc * numCards + oc, true);
                 }
             }
         }

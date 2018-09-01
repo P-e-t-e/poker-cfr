@@ -15,25 +15,30 @@ public class Node {
     public BitSet showdownLost;
     public int[] newBoardCards;
     public BitSet validRanges;
-    public double[][] regretSum = new double[Trainer.NUM_ACTIONS][Trainer.NUM_CARDS],
-            strategy = new double[Trainer.NUM_ACTIONS][Trainer.NUM_CARDS],
-            strategySum = new double[Trainer.NUM_ACTIONS][Trainer.NUM_CARDS];
+    public double[][] regretSum, strategy, strategySum;
     public double[][] values;
-    public double[][] p = new double[2][Trainer.NUM_CARDS];
+    public double[][] p;
     public Node parent_node;
     public Node[] childNodes;
     public boolean is_terminal = false;
+    public int numCards;
 
-    public Node(boolean[] validActions, String infoSet) {
+    public Node(boolean[] validActions, String infoSet, Trainer trainer) {
         this.validActions = validActions;
         this.infoSet = infoSet;
+        numCards = trainer.NUM_CARDS;
         childNodes = new Node[Trainer.NUM_ACTIONS];
-        values = new double[Trainer.NUM_ACTIONS][Trainer.NUM_CARDS];
+        regretSum = new double[Trainer.NUM_ACTIONS][numCards];
+        strategy = new double[Trainer.NUM_ACTIONS][numCards];
+        strategySum = new double[Trainer.NUM_ACTIONS][numCards];
+        p = new double[2][numCards];
+
+        values = new double[Trainer.NUM_ACTIONS][numCards];
         for (int a = 0; a < Trainer.NUM_ACTIONS; a++) {
             if (this.validActions[a]) {
                 this.numValidActions += 1;
             }
-            for (int c = 0; c < Trainer.NUM_CARDS; c++) {
+            for (int c = 0; c < numCards; c++) {
                 strategySum[a][c] = 0.01;
             }
         }
@@ -51,7 +56,7 @@ public class Node {
     //Returns strategy stored by node
     public double[][] getStrategy() {
         //For each action, take the strategy weight to be the regret sum if the regret sum is positive. Calculate normalizing sum appropriately.
-        for (int c = 0; c < Trainer.NUM_CARDS; c++) {
+        for (int c = 0; c < numCards; c++) {
             double normalizingSum = 0;
             for (int a = 0; a < Trainer.NUM_ACTIONS; a++) {
                 if (this.validActions[a]) {
@@ -73,8 +78,8 @@ public class Node {
 
     //Returns average strategy stored by node
     public double[][] getAverageStrategy() {
-        double[][] avgStrategy = new double[Trainer.NUM_ACTIONS][Trainer.NUM_CARDS];
-        for (int c = 0; c < Trainer.NUM_CARDS; c++) {
+        double[][] avgStrategy = new double[Trainer.NUM_ACTIONS][numCards];
+        for (int c = 0; c < numCards; c++) {
             double normalizingSum = 0;
             //Calculate normalizing sum. Then, normalize each action and return it. If normalization sum is non-positive, simply return uniform strategy.
             for (int a = 0; a < Trainer.NUM_ACTIONS; a++) {
@@ -105,10 +110,10 @@ public class Node {
 
     // Get showdown value
     public double getShowdownValue(int player_card, int opp_card) {
-        return (showdownLost.get(player_card * Trainer.NUM_CARDS + opp_card) ? -winSize : winSize);
+        return (showdownLost.get(player_card * numCards + opp_card) ? -winSize : winSize);
     }
 
     public boolean getShowdownWinner(int player_card, int opp_card) {
-        return !showdownLost.get(player_card * Trainer.NUM_CARDS + opp_card);
+        return !showdownLost.get(player_card * numCards + opp_card);
     }
 }

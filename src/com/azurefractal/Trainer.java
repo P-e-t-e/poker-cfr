@@ -1,7 +1,9 @@
 package com.azurefractal;
 
 import com.azurefractal.Evaluator.PokerCard;
-import com.azurefractal.Node.*;
+import com.azurefractal.Node.BoardNode;
+import com.azurefractal.Node.Node;
+import com.azurefractal.Node.TerminalNode;
 
 import java.util.Arrays;
 import java.util.Random;
@@ -9,28 +11,28 @@ import java.util.TreeMap;
 
 public class Trainer {
     // Board that is out there before the first street
-    public static final int[] board = {PokerCard.to_int("2s"), PokerCard.to_int("4h"),
+    public int[] board = {PokerCard.to_int("2s"), PokerCard.to_int("4h"),
             PokerCard.to_int("6s"), PokerCard.to_int("8h")};
     // Array of possible two card holdings that either player could have
-    public static final int[][] RANGES = Ranges.get_n_card_deck_range(48, board);//Ranges.get_kuhn_range();//
-    public static final int NUM_CARDS = RANGES.length;
+    public int[][] RANGES = Ranges.get_n_card_deck_range(12, board);//Ranges.get_kuhn_range();//
+    public int NUM_CARDS = RANGES.length;
     // A 2D array of booleans that is true when the player cards do not block each other
-    public static final boolean[][] VALID_RANGE_PAIRS = Util.InitializeValidRangePairs(RANGES);
-    public static final int[] DECK = Util.generateRemainingDeck(board);
+    public boolean[][] VALID_RANGE_PAIRS = Util.InitializeValidRangePairs(RANGES);
+    public int[] DECK = Util.generateRemainingDeck(board);
     // Number of possible board cards that could be dealt
-    public static final int NUM_BOARD_CARDS = 48;
+    public int NUM_BOARD_CARDS = 48;
     // Number of streets. The number of board cards dealt is NUM_STREETS - 1
-    public static final int NUM_STREETS = 2;
+    public int NUM_STREETS = 2;
     // Bet size in terms of number of pot
-    public static final double RELATIVE_BET_SIZE = 0.5;
+    public double RELATIVE_BET_SIZE = 0.5;
     // Maximum number of pot sized bets that can be placed.
-    public static final int BETS_LEFT = 3;
+    public int BETS_LEFT = 3;
 
     public static final String[] ACTION_NAMES = {"p", "b", "c"};
     public static final int NUM_ACTIONS = 3;
     public static final Random random = new Random(0);
     public TreeMap<String, Node> nodeMap = new TreeMap<>();
-    public Node rootNode = new Node(new boolean[]{true, true, false}, "");
+    public Node rootNode;
     public static final int INF = 999999;
 
     public double calculateNetExploitability() {
@@ -52,12 +54,18 @@ public class Trainer {
         return exploitative_value;
     }
 
-    public void train(int iterations, int render_intvl) {
-        System.out.println(RANGES.length);
-        System.out.println(Arrays.deepToString(RANGES));
+    public double[] train(int iterations, int render_intvl) {
+        double[] result = new double[3];
         double[] value0 = new double[NUM_CARDS];
         double[] value1 = new double[NUM_CARDS];
-        Tree.buildTree(rootNode, nodeMap);
+        double exploitability = INF;
+
+        System.out.println(RANGES.length);
+        System.out.println(Arrays.deepToString(RANGES));
+
+
+        rootNode = new Node(new boolean[]{true, true, false}, "", this);
+        Tree.buildTree(rootNode, nodeMap, this);
 //        for (Node n : nodeMap.values()) {
 //            System.out.print(n.infoSet);
 //            System.out.println(Arrays.toString(n.validActions));
@@ -79,7 +87,8 @@ public class Trainer {
             if (i % render_intvl == 0 && i != 0) {
                 System.out.print("Net Expl:");
                 System.out.println(i);
-                System.out.println(calculateNetExploitability());
+                exploitability = calculateNetExploitability();
+                System.out.println(exploitability);
                 System.out.println("Average game value 0: " + Double.toString(Util.arraySum(Util.arrayMultC(1.0 / i, value0))));
                 System.out.println("Average game value 1: " + Double.toString(Util.arraySum(Util.arrayMultC(1.0 / i, value1))));
                 for (Node n : nodeMap.values()) {
@@ -92,6 +101,10 @@ public class Trainer {
                 }
             }
         }
+        result[0] = exploitability;
+        result[1] = Util.arraySum(Util.arrayMultC(1.0 / iterations, value0));
+        result[2] = Util.arraySum(Util.arrayMultC(1.0 / iterations, value1));
+        return result;
     }
 
     //This is a recursive function that returns game value
@@ -154,7 +167,8 @@ public class Trainer {
             nodeValueTemp = 0;
             oppCount = 0;
             for (int pnic = 0; pnic < NUM_CARDS; pnic++) {
-                if (VALID_RANGE_PAIRS[pic][pnic]) {
+                if (node.validRanges.get(pic * NUM_CARDS + pnic)) {
+                    //if (VALID_RANGE_PAIRS[pic][pnic]) {
                     nodeValueTemp += (player_is_plyr_i ?
                             (node.getShowdownWinner(pic, pnic) ? p_not_i[pnic] : -p_not_i[pnic]) :
                             (node.getShowdownWinner(pnic, pic) ? -p_not_i[pnic] : p_not_i[pnic]));
@@ -209,7 +223,8 @@ public class Trainer {
                 double opponentUnblockedSum = 0;
                 int oppCount = 0;
                 for (int pnic = 0; pnic < NUM_CARDS; pnic++) {
-                    if (VALID_RANGE_PAIRS[pic][pnic]) {
+                    if (node.validRanges.get(pic * NUM_CARDS + pnic)) {
+                        //if (VALID_RANGE_PAIRS[pic][pnic]) {
                         nodeValue[pic] += node.p[plyr_not_i][pnic] *
                                 (player == plyr_i ?
                                         node.getShowdownValue(pic, pnic) :
@@ -264,7 +279,7 @@ public class Trainer {
     }
 
     public static void main(String[] args) {
-        int iterations = 1000;
+        int iterations = 1000000;
         Trainer trainer = new Trainer();
         trainer.train(iterations, iterations / 10);
 

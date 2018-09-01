@@ -127,9 +127,9 @@ public class Util {
     }
 
     public static boolean[][] InitializeValidRangePairs(int[][] ranges) {
-        boolean[][] result = new boolean[Trainer.NUM_CARDS][Trainer.NUM_CARDS];
-        for (int pc = 0; pc < Trainer.NUM_CARDS; pc++) {
-            for (int oc = 0; oc < Trainer.NUM_CARDS; oc++) {
+        boolean[][] result = new boolean[ranges.length][ranges.length];
+        for (int pc = 0; pc < ranges.length; pc++) {
+            for (int oc = 0; oc < ranges.length; oc++) {
                 result[pc][oc] = checkCardNotBlocked(ranges[pc], ranges[oc]);
             }
         }
@@ -159,6 +159,10 @@ public class Util {
         }
         System.out.println(Arrays.toString(deck));
         return deck;
+    }
+
+    public static boolean isClose(double value, double target, double threshold) {
+        return (value > target - threshold) && (value < target + threshold);
     }
 
     public long intentional_slow_step() {
