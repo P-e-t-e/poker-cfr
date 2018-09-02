@@ -18,13 +18,13 @@ public class TerminalNode extends Node {
         super(validActions, infoSet, trainer, newBoardCards);
         relativeBetSize = trainer.RELATIVE_BET_SIZE;
         ranges = trainer.RANGES;
-        board = trainer.board;
+        board = Util.arrayConcatenate(trainer.board, newBoardCards);
 
         int n_calls = 0;
         char delimiter = 'c';
         for (int i = 0; i < infoSet.length(); n_calls += (infoSet.charAt(i++) == delimiter ? 1 : 0)) ;
         // winSize is half of the pot.
-        winSize = (float) Math.pow(1.0 + 2.0 * relativeBetSize, n_calls);
+        winSize = Math.pow(1.0 + 2.0 * relativeBetSize, n_calls);
         showdownLost = new BitSet(numCards * numCards);
         validRanges = new BitSet(numCards * numCards);
         int plays = infoSet.length();

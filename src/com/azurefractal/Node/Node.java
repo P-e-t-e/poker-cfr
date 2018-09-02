@@ -101,7 +101,7 @@ public class Node {
 
     public double[][] getActualStrategy() {
         return getAverageStrategy();
-//            return getStrategy();
+//        return getStrategy();
     }
 
     //Return average strategy
