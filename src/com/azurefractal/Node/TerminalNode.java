@@ -21,11 +21,18 @@ public class TerminalNode extends Node {
         board = Util.arrayConcatenate(trainer.board, newBoardCards);
 
         int n_calls = 0;
-        char delimiter = 'c';
-        for (int i = 0; i < infoSet.length(); n_calls += (infoSet.charAt(i++) == delimiter ? 1 : 0)) ;
+        for (int i = 1; i < infoSet.length(); i++) {
+            if (infoSet.charAt(i) == 'c') {
+                n_calls++;
+            } else if ((infoSet.charAt(i) == 'b') && (infoSet.charAt(i - 1) == 'b')) {
+                n_calls++;
+            }
+        }
+
         // winSize is half of the pot.
         winSize = Math.pow(1.0 + 2.0 * relativeBetSize, n_calls);
-        showdownLost = new BitSet(numCards * numCards);
+        showdownNotWon = new BitSet(numCards * numCards);
+        showdownDrawn = new BitSet(numCards * numCards);
         validRanges = new BitSet(numCards * numCards);
         int plays = infoSet.length();
         String endingString = infoSet.substring(plays - 2, plays);
@@ -33,16 +40,21 @@ public class TerminalNode extends Node {
         terminalFold = endingString.equals("bp");
         terminalCall = infoSet.substring(plays - 1, plays).equals("c");
 
-        calculateShowdownWinner();
+        calculateShowdown();
         calculateValidRanges();
     }
 
-    private void calculateShowdownWinner() {
+    private void calculateShowdown() {
         if (!terminalFold) {
             for (int pc = 0; pc < numCards; pc++) {
                 for (int oc = 0; oc < numCards; oc++) {
                     if (pc != oc) {
-                        showdownLost.set(pc * numCards + oc, !determineShowdownWinner(pc, oc));
+                        int playerStrength = HandEvaluator.evaluateManyCardHandsToInt(Util.arrayConcatenate(board, ranges[pc]));
+                        int oppStrength = HandEvaluator.evaluateManyCardHandsToInt(Util.arrayConcatenate(board, ranges[oc]));
+                        showdownNotWon.set(pc * numCards + oc, !(playerStrength < oppStrength));
+                        if (playerStrength == oppStrength) {
+                            showdownDrawn.set(pc * numCards + oc, true);
+                        }
                     }
                 }
             }

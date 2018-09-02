@@ -12,7 +12,8 @@ public class Node {
     public int numValidActions;
     public int player;
     public double winSize;
-    public BitSet showdownLost;
+    public BitSet showdownNotWon;
+    public BitSet showdownDrawn;
     public int[] newBoardCards;
     public BitSet validRanges;
     public double[][] regretSum, strategy, strategySum;
@@ -111,10 +112,14 @@ public class Node {
 
     // Get showdown value
     public double getShowdownValue(int player_card, int opp_card) {
-        return (showdownLost.get(player_card * numCards + opp_card) ? -winSize : winSize);
+        return (showdownNotWon.get(player_card * numCards + opp_card) ? -winSize : winSize);
     }
 
     public boolean getShowdownWinner(int player_card, int opp_card) {
-        return !showdownLost.get(player_card * numCards + opp_card);
+        return !showdownNotWon.get(player_card * numCards + opp_card);
+    }
+
+    public boolean getShowdownDrawn(int player_card, int opp_card) {
+        return showdownDrawn.get(player_card * numCards + opp_card);
     }
 }

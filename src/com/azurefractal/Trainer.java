@@ -174,9 +174,19 @@ public class Trainer {
             for (int pnic = 0; pnic < NUM_CARDS; pnic++) {
                 if (node.validRanges.get(pic * NUM_CARDS + pnic)) {
                     //if (VALID_RANGE_PAIRS[pic][pnic]) {
-                    nodeValueTemp += (player_is_plyr_i ?
-                            (node.getShowdownWinner(pic, pnic) ? p_not_i[pnic] : -p_not_i[pnic]) :
-                            (node.getShowdownWinner(pnic, pic) ? -p_not_i[pnic] : p_not_i[pnic]));
+                    if (player_is_plyr_i) {
+                        if (node.getShowdownWinner(pic, pnic)) {
+                            nodeValueTemp += p_not_i[pnic];
+                        } else if (!node.getShowdownDrawn(pic, pnic)) {
+                            nodeValueTemp += -p_not_i[pnic];
+                        }
+                    } else {
+                        if (node.getShowdownWinner(pnic, pic)) {
+                            nodeValueTemp += -p_not_i[pnic];
+                        } else if (!node.getShowdownDrawn(pnic, pic)) {
+                            nodeValueTemp += p_not_i[pnic];
+                        }
+                    }
 //                    opponentUnblockedSum += node.p[plyr_not_i][pnic];
                     oppCount += 1;
                 }
@@ -213,6 +223,11 @@ public class Trainer {
     private double[] exploit(Node node, double[] pi, double[] pni, int plyr_i) {
         int player = node.player;
         int plyr_not_i = 1 - plyr_i;
+        boolean player_is_plyr_i = player == plyr_i;
+        double[] p_not_i = node.p[plyr_not_i];
+        double winSize = node.winSize;
+        double nodeValueTemp;
+        int oppCount;
 
         node.p[0] = (plyr_i == 0) ? pi : pni;
         node.p[1] = (plyr_i == 1) ? pi : pni;
@@ -226,15 +241,26 @@ public class Trainer {
         } else if (node.is_terminal) {
             double[] nodeValue = new double[NUM_CARDS];
             for (int pic = 0; pic < NUM_CARDS; pic++) {
-                double opponentUnblockedSum = 0;
-                int oppCount = 0;
+//                double opponentUnblockedSum = 0;
+                nodeValueTemp = 0;
+                oppCount = 0;
                 for (int pnic = 0; pnic < NUM_CARDS; pnic++) {
                     if (node.validRanges.get(pic * NUM_CARDS + pnic)) {
                         //if (VALID_RANGE_PAIRS[pic][pnic]) {
-                        nodeValue[pic] += node.p[plyr_not_i][pnic] *
-                                (player == plyr_i ?
-                                        node.getShowdownValue(pic, pnic) :
-                                        -node.getShowdownValue(pnic, pic));
+                        if (player_is_plyr_i) {
+                            if (node.getShowdownWinner(pic, pnic)) {
+                                nodeValueTemp += p_not_i[pnic];
+                            } else if (!node.getShowdownDrawn(pic, pnic)) {
+                                nodeValueTemp += -p_not_i[pnic];
+                            }
+                        } else {
+                            if (node.getShowdownWinner(pnic, pic)) {
+                                nodeValueTemp += -p_not_i[pnic];
+                            } else if (!node.getShowdownDrawn(pnic, pic)) {
+                                nodeValueTemp += p_not_i[pnic];
+                            }
+                        }
+//                    opponentUnblockedSum += node.p[plyr_not_i][pnic];
                         oppCount += 1;
                     }
                 }
@@ -242,7 +268,7 @@ public class Trainer {
 //                    nodeValue[pic] *= 1 / opponentUnblockedSum;
 //                }
                 if (oppCount > 0) {
-                    nodeValue[pic] /= oppCount;
+                    nodeValue[pic] = winSize * nodeValueTemp / oppCount;
                 }
             }
             return nodeValue;
