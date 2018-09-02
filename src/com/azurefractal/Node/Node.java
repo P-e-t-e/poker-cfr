@@ -23,7 +23,7 @@ public class Node {
     public boolean is_terminal = false;
     public int numCards;
 
-    public Node(boolean[] validActions, String infoSet, Trainer trainer) {
+    public Node(boolean[] validActions, String infoSet, Trainer trainer, int[] newBoardCards) {
         this.validActions = validActions;
         this.infoSet = infoSet;
         numCards = trainer.NUM_CARDS;
@@ -32,6 +32,7 @@ public class Node {
         strategy = new double[Trainer.NUM_ACTIONS][numCards];
         strategySum = new double[Trainer.NUM_ACTIONS][numCards];
         p = new double[2][numCards];
+        this.newBoardCards = newBoardCards;
 
         values = new double[Trainer.NUM_ACTIONS][numCards];
         for (int a = 0; a < Trainer.NUM_ACTIONS; a++) {
@@ -39,7 +40,7 @@ public class Node {
                 this.numValidActions += 1;
             }
             for (int c = 0; c < numCards; c++) {
-                strategySum[a][c] = 0.01;
+                strategySum[a][c] = 0.00001;
             }
         }
         int plays = infoSet.length();

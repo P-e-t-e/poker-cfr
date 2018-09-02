@@ -3,6 +3,7 @@ package com.azurefractal;
 import com.azurefractal.Evaluator.PokerCard;
 
 import java.util.Arrays;
+import java.util.TreeMap;
 
 public class Util {
     public static double[] arrayAdd(double[] vector1, double[] vector2) {
@@ -142,8 +143,8 @@ public class Util {
         String[] ranks = {"2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A"};
 
         int ctr = 0;
-        for (int s = 0; s < 4; s++) {
-            for (int r = 2; r < 15; r++) {
+        for (int r = 2; r < 15; r++) {
+            for (int s = 0; s < 4; s++) {
                 int new_card = PokerCard.to_int(ranks[14 - r] + suits[s]);
                 boolean is_clash = false;
                 for (int board_card : board) {
@@ -165,19 +166,50 @@ public class Util {
         return (value > target - threshold) && (value < target + threshold);
     }
 
-    public long intentional_slow_step() {
-        long nanoTime = System.nanoTime();
-        long dd = 0;
-        for (int i = 0; i < 100; i++) {
-            for (int j = 0; j < 100; j++) {
-                for (int k = 0; k < 100; k++) {
-                    for (int l = 0; l < 10; l++) {
-                        dd = Math.round(0.0001 * Math.tanh(i * j * k * l));
-                    }
-                }
+    public static TreeMap<String, String> generateCardIntToNameMap() {
+        String[] suits = {"c", "d", "h", "s"};
+        String[] ranks = {"2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A"};
+        TreeMap<String, String> treeMap = new TreeMap<>();
+
+        for (int s = 0; s < 4; s++) {
+            for (int r = 2; r < 15; r++) {
+                int new_card = PokerCard.to_int(ranks[14 - r] + suits[s]);
+                treeMap.put(Integer.toString(new_card), ranks[14 - r] + suits[s]);
             }
         }
-        System.out.println(System.nanoTime() - nanoTime);
-        return dd;
+        return treeMap;
+    }
+
+    public static String handToString(int[] hand, TreeMap<String, String> cardIntToNameMap) {
+        String outputString = "";
+        for (int card : hand) {
+            outputString += cardIntToNameMap.get(Integer.toString(card));
+        }
+        return outputString;
+    }
+
+    public static String arrayToString(double[] array) {
+        StringBuilder outputString = new StringBuilder("[");
+        for (double value : array) {
+            outputString.append(String.format("%.6f", value));
+            outputString.append(", ");
+        }
+        outputString.append("]");
+        return outputString.toString();
+    }
+
+    public static double[][] transposeMatrix(double[][] matrix) {
+        int m = matrix.length;
+        int n = matrix[0].length;
+
+        double[][] transposedMatrix = new double[n][m];
+
+        for (int x = 0; x < n; x++) {
+            for (int y = 0; y < m; y++) {
+                transposedMatrix[x][y] = matrix[y][x];
+            }
+        }
+
+        return transposedMatrix;
     }
 }

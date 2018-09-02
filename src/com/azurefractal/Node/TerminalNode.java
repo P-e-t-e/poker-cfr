@@ -15,7 +15,7 @@ public class TerminalNode extends Node {
     private int[] board;
 
     public TerminalNode(boolean[] validActions, String infoSet, Trainer trainer, int[] newBoardCards) {
-        super(validActions, infoSet, trainer);
+        super(validActions, infoSet, trainer, newBoardCards);
         relativeBetSize = trainer.RELATIVE_BET_SIZE;
         ranges = trainer.RANGES;
         board = trainer.board;
@@ -33,7 +33,6 @@ public class TerminalNode extends Node {
         terminalFold = endingString.equals("bp");
         terminalCall = infoSet.substring(plays - 1, plays).equals("c");
 
-        this.newBoardCards = newBoardCards;
         calculateShowdownWinner();
         calculateValidRanges();
     }

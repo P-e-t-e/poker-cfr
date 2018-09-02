@@ -98,8 +98,8 @@ public class Ranges {
         String[] ranks = {"2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A"};
 
         int ctr = 0;
-        for (int s = 0; s < 4; s++) {
-            for (int r = 2; r < 15; r++) {
+        for (int r = 2; r < 15; r++) {
+            for (int s = 0; s < 4; s++) {
                 int new_card = PokerCard.to_int(ranks[14 - r] + suits[s]);
                 boolean is_clash = false;
                 for (int bc = 0; bc < board.length; bc++) {
@@ -120,8 +120,8 @@ public class Ranges {
 
         for (int i = 0; i < valid_n; i++) {
             for (int j = 0; j < i; j++) {
-                range[k][0] = deck[i];
-                range[k][1] = deck[j];
+                range[k][0] = deck[j];
+                range[k][1] = deck[i];
                 k += 1;
             }
         }

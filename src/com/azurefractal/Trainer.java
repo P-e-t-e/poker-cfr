@@ -5,9 +5,12 @@ import com.azurefractal.Node.BoardNode;
 import com.azurefractal.Node.Node;
 import com.azurefractal.Node.TerminalNode;
 
+import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.TreeMap;
+
+import static com.sun.corba.se.impl.util.Utility.printStackTrace;
 
 public class Trainer {
     // Board that is out there before the first street
@@ -34,6 +37,7 @@ public class Trainer {
     public TreeMap<String, Node> nodeMap = new TreeMap<>();
     public Node rootNode;
     public static final int INF = 999999;
+    public double[] result = new double[3];
 
     public double calculateNetExploitability() {
         return 0.5 * (calculateExploitabilityFor(0) + calculateExploitabilityFor(1));
@@ -55,7 +59,6 @@ public class Trainer {
     }
 
     public double[] train(int iterations, int render_intvl) {
-        double[] result = new double[3];
         double[] value0 = new double[NUM_CARDS];
         double[] value1 = new double[NUM_CARDS];
         double exploitability = INF;
@@ -64,7 +67,7 @@ public class Trainer {
         System.out.println(Arrays.deepToString(RANGES));
 
 
-        rootNode = new Node(new boolean[]{true, true, false}, "", this);
+        rootNode = new Node(new boolean[]{true, true, false}, "", this, new int[]{});
         Tree.buildTree(rootNode, nodeMap, this);
 //        for (Node n : nodeMap.values()) {
 //            System.out.print(n.infoSet);
@@ -289,6 +292,45 @@ public class Trainer {
                 System.out.println(Arrays.deepToString(n.values));
             }
         }
+        trainer.saveOutput();
     }
 
+    public void saveOutput() {
+        String[] handNames = new String[NUM_CARDS];
+        TreeMap<String, String> cardIntToNameMap = Util.generateCardIntToNameMap();
+        for (int i = 0; i < NUM_CARDS; i++) {
+            handNames[i] = Util.handToString(RANGES[i], cardIntToNameMap);
+        }
+
+        try {
+            PrintWriter writer = new PrintWriter("cfr-result.txt", "UTF-8");
+            writer.println("Exploitability");
+            writer.println(result[0]);
+            writer.println("Player 0 value");
+            writer.println(result[1]);
+            writer.println("Player 1 value");
+            writer.println(result[2]);
+            for (Node n : nodeMap.values()) {
+                if (!(n instanceof TerminalNode)) {
+//                    writer.print(n.player);
+//                    writer.print(n.infoSet);
+//                    writer.print("      ");
+//                    writer.println();
+                    writer.printf("%s %-10s %-10s%n", n.player, n.infoSet,
+                            Util.handToString(Util.arrayConcatenate(board, n.newBoardCards), cardIntToNameMap));
+                    double[][] actualStrategy = Util.transposeMatrix(n.getActualStrategy());
+                    for (int i = 0; i < NUM_CARDS; i++) {
+                        if (n.p[n.player][i] > 0.0001 / NUM_CARDS) {
+                            writer.printf("%s %-34s %-20.9f%n", Util.handToString(RANGES[i], cardIntToNameMap),
+                                    Util.arrayToString(actualStrategy[i]),
+                                    n.p[n.player][i] * NUM_CARDS);
+                        }
+                    }
+                }
+            }
+            writer.close();
+        } catch (Exception e) {
+            printStackTrace();
+        }
+    }
 }
