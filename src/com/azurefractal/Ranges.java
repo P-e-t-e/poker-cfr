@@ -62,14 +62,27 @@ public class Ranges {
         return range;
     }
 
+    /**
+     * Generates a leduc range containing (AcAh, AdAs, KcKh, KdKs, QcQh, QdQs).
+     * The corresponding deck should be (Ac, Ad, Kc, Kd, Qc, Qd).
+     * This replicates usual leduc poker with 1 hole card, with the same blocking properties.
+     *
+     * @return range
+     */
     public static int[][] get_leduc_range() {
         int[][] range = new int[6][2];
         int k = 0;
         PokerCard card0;
         PokerCard card1;
-        for (int i = 9; i < 15; i++) {
+        for (int i = 12; i < 15; i++) {
             card0 = new PokerCard(new Rank(i), Suit.CLUB);
-            card1 = new PokerCard(new Rank(i), Suit.DIAMOND);
+            card1 = new PokerCard(new Rank(i), Suit.HEART);
+            range[k][0] = card0.getEncodedValue();
+            range[k][1] = card1.getEncodedValue();
+            k += 1;
+
+            card0 = new PokerCard(new Rank(i), Suit.DIAMOND);
+            card1 = new PokerCard(new Rank(i), Suit.SPADE);
             range[k][0] = card0.getEncodedValue();
             range[k][1] = card1.getEncodedValue();
             k += 1;

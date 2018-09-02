@@ -17,19 +17,19 @@ public class Trainer {
     public int[] board = {PokerCard.to_int("2s"), PokerCard.to_int("4h"),
             PokerCard.to_int("6s"), PokerCard.to_int("8h")};
     // Array of possible two card holdings that either player could have
-    public int[][] RANGES = Ranges.get_n_card_deck_range(12, board);//Ranges.get_kuhn_range();//
+    public int[][] RANGES = Ranges.get_n_card_deck_range(12, board);//Ranges.get_leduc_range();//
     public int NUM_CARDS = RANGES.length;
     // A 2D array of booleans that is true when the player cards do not block each other
     public boolean[][] VALID_RANGE_PAIRS = Util.InitializeValidRangePairs(RANGES);
-    public int[] DECK = Util.generateRemainingDeck(board);
+    public int[] DECK = Decks.generateRemainingDeck(board);//Decks.generateLeducDeck(board);//
     // Number of possible board cards that could be dealt
     public int NUM_BOARD_CARDS = 48;
     // Number of streets. The number of board cards dealt is NUM_STREETS - 1
     public int NUM_STREETS = 2;
     // Bet size in terms of number of pot
-    public double RELATIVE_BET_SIZE = 0.5;
+    public double RELATIVE_BET_SIZE = 1.0;
     // Maximum number of pot sized bets that can be placed.
-    public int BETS_LEFT = 3;
+    public int BETS_LEFT = 2;
 
     public static final String[] ACTION_NAMES = {"p", "b", "c"};
     public static final int NUM_ACTIONS = 3;
@@ -38,6 +38,7 @@ public class Trainer {
     public Node rootNode;
     public static final int INF = 999999;
     public double[] result = new double[3];
+    public double weight = 1.0;
 
     public double calculateNetExploitability() {
         return 0.5 * (calculateExploitabilityFor(0) + calculateExploitabilityFor(1));
@@ -86,6 +87,7 @@ public class Trainer {
                     value1 = Util.arrayAdd(value1, cfr(rootNode, pi, pni, plyr_i));
                 }
             }
+            weight += 1.0;
 
             if (i % render_intvl == 0 && i != 0) {
                 System.out.print("Net Expl:");
@@ -150,7 +152,7 @@ public class Trainer {
 
         // LINE 34-42
         if (player == plyr_i) {
-            update_regret_and_strategy_sum(node, nodeValue, strategy, pi);
+            update_regret_and_strategy_sum(node, nodeValue, strategy, pi, weight);
         }
         return nodeValue;
     }
@@ -193,7 +195,8 @@ public class Trainer {
         return nodeValue;
     }
 
-    private void update_regret_and_strategy_sum(Node node, double[] nodeValue, double[][] strategy, double[] pi) {
+    private void update_regret_and_strategy_sum(Node node, double[] nodeValue, double[][] strategy,
+                                                double[] pi, double weight) {
         for (int c = 0; c < NUM_CARDS; c++) {
             for (int a = 0; a < NUM_ACTIONS; a++) {
                 if (node.validActions[a]) {
@@ -201,7 +204,7 @@ public class Trainer {
                     // According to paper, no weighing of regret here?
 //                        node.regretSum[a][c] += regret;
                     node.regretSum[a][c] = Math.max(node.regretSum[a][c] + regret, 0.0);
-                    node.strategySum[a][c] += pi[c] * strategy[a][c];
+                    node.strategySum[a][c] += pi[c] * strategy[a][c] * weight;
                 }
             }
         }
@@ -282,7 +285,7 @@ public class Trainer {
     }
 
     public static void main(String[] args) {
-        int iterations = 1000000;
+        int iterations = 100000;
         Trainer trainer = new Trainer();
         trainer.train(iterations, iterations / 10);
 
@@ -311,19 +314,22 @@ public class Trainer {
             writer.println("Player 1 value");
             writer.println(result[2]);
             for (Node n : nodeMap.values()) {
-                if (!(n instanceof TerminalNode)) {
+                if ((n.numValidActions > 1) && !(n instanceof BoardNode)) {
 //                    writer.print(n.player);
 //                    writer.print(n.infoSet);
 //                    writer.print("      ");
 //                    writer.println();
-                    writer.printf("%s %-10s %-10s%n", n.player, n.infoSet,
-                            Util.handToString(Util.arrayConcatenate(board, n.newBoardCards), cardIntToNameMap));
+                    writer.printf("%s %-10s %-10s P0 Prob: %-10.8f P1 Prob: %-8.6f %n", n.player, n.infoSet,
+                            Util.handToString(Util.arrayConcatenate(board, n.newBoardCards), cardIntToNameMap),
+                            Util.arraySum(n.p[0]), Util.arraySum(n.p[1]));
                     double[][] actualStrategy = Util.transposeMatrix(n.getActualStrategy());
+                    double[][] values = Util.transposeMatrix(n.values);
                     for (int i = 0; i < NUM_CARDS; i++) {
                         if (n.p[n.player][i] > 0.0001 / NUM_CARDS) {
-                            writer.printf("%s %-34s %-20.9f%n", Util.handToString(RANGES[i], cardIntToNameMap),
+                            writer.printf("%s %-34s %-8.6f %-34s%n", Util.handToString(RANGES[i], cardIntToNameMap),
                                     Util.arrayToString(actualStrategy[i]),
-                                    n.p[n.player][i] * NUM_CARDS);
+                                    n.p[n.player][i] * NUM_CARDS,
+                                    Util.arrayToString(values[i]));
                         }
                     }
                 }

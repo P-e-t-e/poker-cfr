@@ -5,6 +5,7 @@ public class Test {
     public static void main(String[] args) {
         runKuhnPokerTest();
         runBinaryPokerTest();
+        runApproximateLeducPokerTest();
     }
 
     private static void runKuhnPokerTest() {
@@ -13,7 +14,7 @@ public class Test {
         trainer.RANGES = Ranges.get_kuhn_range();
         trainer.NUM_CARDS = trainer.RANGES.length;
         trainer.VALID_RANGE_PAIRS = Util.InitializeValidRangePairs(trainer.RANGES);
-        trainer.DECK = Util.generateRemainingDeck(trainer.board);
+        trainer.DECK = Decks.generateRemainingDeck(trainer.board);
         trainer.NUM_BOARD_CARDS = 48;
         trainer.NUM_STREETS = 1;
         trainer.RELATIVE_BET_SIZE = 0.5;
@@ -32,7 +33,7 @@ public class Test {
         trainer.RANGES = Ranges.get_binary_range();
         trainer.NUM_CARDS = trainer.RANGES.length;
         trainer.VALID_RANGE_PAIRS = Util.InitializeValidRangePairs(trainer.RANGES);
-        trainer.DECK = Util.generateRemainingDeck(trainer.board);
+        trainer.DECK = Decks.generateRemainingDeck(trainer.board);
         trainer.NUM_BOARD_CARDS = 48;
         trainer.NUM_STREETS = 2;
         trainer.RELATIVE_BET_SIZE = 0.5;
@@ -43,5 +44,24 @@ public class Test {
         assert Util.isClose(result[1], -0.00, 0.0001);
         assert Util.isClose(result[2], 0.00, 0.0001);
         System.out.println("Binary poker test case passed.");
+    }
+
+    private static void runApproximateLeducPokerTest() {
+        int iterations = 2000000;
+        Trainer trainer = new Trainer();
+        trainer.RANGES = Ranges.get_leduc_range();
+        trainer.NUM_CARDS = trainer.RANGES.length;
+        trainer.VALID_RANGE_PAIRS = Util.InitializeValidRangePairs(trainer.RANGES);
+        trainer.DECK = Decks.generateLeducDeck(trainer.board);
+        trainer.NUM_BOARD_CARDS = 6;
+        trainer.NUM_STREETS = 2;
+        trainer.RELATIVE_BET_SIZE = 1.0;
+        trainer.BETS_LEFT = 3;
+
+        double[] result = trainer.train(iterations, iterations / 10);
+        assert result[0] < 0.0001;
+        assert Util.isClose(result[1], -0.23785, 0.001);
+        assert Util.isClose(result[2], 0.23785, 0.001);
+        System.out.println("Approx. Leduc poker test case passed.");
     }
 }
